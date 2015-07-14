@@ -1,0 +1,13 @@
+PATHS
+-----
+Create_Compiled_Values.m
+    ~/Nicco/NIQ/Scripts/
+
+run_network_probtrackx_by_CharIndex.sh
+    ~/Nicco/HCP_Scripts/
+
+run_network_probtrackx_bySubjectID.sh
+    ~/Nicco/HCP_Scripts/
+
+make_masks_from_atlas_Gordon.m
+    ~/Nicco/MATLAB_PATH/NR_Scripts/General_Use/
