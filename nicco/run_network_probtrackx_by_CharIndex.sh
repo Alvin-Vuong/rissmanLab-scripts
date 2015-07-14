@@ -1,5 +1,4 @@
 #!/bin/sh
-# run_network_probtrackx_by_CharIndex.sh
 ############################################################################
 # This script runs probtrack jobs for selected subjects' seeds on the grid
 # and stores the results in:
@@ -26,14 +25,16 @@ all_dirs=$(ls -d [0-9]*/)
 
 # Use this to select certain subjects (number is starting char index)
 # Use the following commands to find the line #:
+# (Be sure you're in the correct directory:)
+#  ~/Nicco/HCP_ALL/Move2Func/ 
 #
 # ls -d1 [0-9]* > subjs.txt
-# awk '/{SubjectID}/{ print NR; exit }'
+# awk '/{SubjectID}/{ print NR; exit }' subjs.txt
 # 
-# This should output a number. Subtract this value by 8. 
+# This should output a number. Multiply by 8, and subtract by 8. 
 # Then change the following line of code to include this value.
 
-array=("${all_dirs[@]:720}")
+array=("${all_dirs[@]:1104}")
 
 # Loop through subjects (all_dirs for all, $array for selected)
 #for j in $all_dirs
@@ -63,6 +64,9 @@ if [ $(($f % 5)) == 0 ]; then
 echo "Sleeping for 2 minutes to prevent grid Clogging"
 
 sleep 2m
+
 fi
+
+done
 
 done
