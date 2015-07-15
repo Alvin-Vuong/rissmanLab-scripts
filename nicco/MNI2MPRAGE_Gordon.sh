@@ -2,7 +2,11 @@
 #########################################################################
 # MNI2MPRAGE_Gordon.sh
 #
-# This script realigns the Gordon masks from MNI-space to MPRAGE-space.
+# This script realigns the Gordon masks from MNI-space to MPRAGE-space
+# for each subject.
+# Saves realigned masks as:
+#
+# ~/Nicco/masks/Subject_Specific/{SubjectID}_Gordon_{ROI}.nii.gz
 #
 # Code is based on 'MNI2MPRAGE.sh' located at:
 #
