@@ -51,7 +51,7 @@ for s = 1:length(subjs)
     
     % Iterate through seeds
     % PARALLEL: Use parfor instead of for
-    parfor seed = 1:8
+    parfor seed = 1:264
         % Move into seed folder
         seed_str = num2str(seed);
         fprintf('Moving to seed: %s\n', seed_str);
@@ -62,7 +62,7 @@ for s = 1:length(subjs)
         num_vox = waytotal/5000;
         
         % Find all targets
-        targets = setdiff(1:8,seed);
+        targets = setdiff(1:264,seed);
         
         % Create temporary row vectors
         % PARALLEL: Uncomment these lines
