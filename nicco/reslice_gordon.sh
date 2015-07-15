@@ -3,7 +3,7 @@
 # reslice_gordon.sh
 #
 # This script reslices the Gordon masks per subject to the correct size.
-#
+# Overwrites the old compressed files in the masks folder.
 #
 # Code based on 'reslice_Petersen.sh' located at:
 #
