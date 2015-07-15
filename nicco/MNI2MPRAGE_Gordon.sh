@@ -38,16 +38,16 @@ do
   for ((s = 1; s <= 333; s++))
   do
   (
-  # Realign mask
-  echo "Mask ${s}..."
-
-  flirt -in "${Gordon_Dir}/Gordon_${s}.nii" -ref "${structural_path}/${j: 0: -1}_bet.nii.gz" -applyxfm -init "${xfm_dir}/MPRAGE${j: 0: -1}2MNIinv" -out "${save_path}${j: 0: -1}_Gordon_${s}.nii.gz" ) &
-
-  # Run jobs in background 10 at a time
-  if (( $s % 10 == 0 ))
-  then
-    wait
-  fi
+    # Realign mask
+    echo "Mask ${s}..."
+    
+    flirt -in "${Gordon_Dir}/Gordon_${s}.nii" -ref "${structural_path}/${j: 0: -1}_bet.nii.gz" -applyxfm -init "${xfm_dir}/MPRAGE${j: 0: -1}2MNIinv" -out "${save_path}${j: 0: -1}_Gordon_${s}.nii.gz" ) &
+  
+    # Run jobs in background 10 at a time
+    if (( $s % 10 == 0 ))
+    then
+      wait
+    fi
 
   done
   wait
