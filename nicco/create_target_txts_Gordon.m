@@ -38,12 +38,12 @@ subjs = {subjs(~cellfun('isempty',regex)).name}.';
 cd(ref_dir);
 
 % Iterate over subjects
-% PARALLEL: Use parfor instead of for
 for s = 1:length(subjs)
     % Create subject string
     subject_str = char(subjs(s));
 
     % Iterate over seeds
+    % PARALLEL: Use parfor instead of for
     parfor seed = 1:333
         % Create seed string
         seed_str = num2str(seed);
