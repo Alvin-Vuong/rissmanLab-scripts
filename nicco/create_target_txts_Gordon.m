@@ -15,8 +15,8 @@
 %
 % ~/Nicco/HCPQ3/Scripts/
 %
-% This code has an option to run in parallel with 8 workers (on subjects only).
-% (Writing to the same file could cause problems... Hence subjects only)
+% This code has an option to run in parallel with 8 workers (on seeds only).
+% Just alter the code where it says 'PARALLEL'.
 %
 % Parallelization and loops based on 'Create_Compiled_Values.m' located at:
 %
@@ -39,12 +39,12 @@ cd(ref_dir);
 
 % Iterate over subjects
 % PARALLEL: Use parfor instead of for
-parfor s = 1:length(subjs)
+for s = 1:length(subjs)
     % Create subject string
     subject_str = char(subjs(s));
 
     % Iterate over seeds
-    for seed = 1:333
+    parfor seed = 1:333
         % Create seed string
         seed_str = num2str(seed);
         
