@@ -9,6 +9,9 @@ MNI2MPRAGE_Gordon.sh
 reslice_gordon.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
+create_target_txts_Gordon.m
+    ~/Nicco/NIQ/HCP_Scripts/
+
 run_network_probtrackx_by_CharIndex.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
