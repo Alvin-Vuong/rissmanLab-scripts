@@ -15,6 +15,7 @@
 %
 % ~/Nicco/HCPQ3/Scripts/
 %
+% **For some reason parallel option is not working (memory usage of other processes maybe)**
 % This code has an option to run in parallel with 8 workers (on seeds only).
 % Just alter the code where it says 'PARALLEL'.
 %
@@ -44,7 +45,7 @@ for s = 1:length(subjs)
 
     % Iterate over seeds
     % PARALLEL: Use parfor instead of for
-    parfor seed = 1:333
+    for seed = 1:333
         % Create seed string
         seed_str = num2str(seed);
         
