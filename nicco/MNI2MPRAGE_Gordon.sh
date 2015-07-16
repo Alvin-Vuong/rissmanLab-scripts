@@ -12,6 +12,13 @@
 #
 # ~/Nicco/NIQ/HCP_Scripts/
 #
+#
+# Bug? Looks like it worked, but
+# At the end of running this script, it outputs:
+#
+# line 51: unexpected EOF while looking for matching `"'
+# line 62: syntax error: unexpected end of file
+#
 #########################################################################
 
 # Set paths
