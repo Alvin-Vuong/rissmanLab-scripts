@@ -22,6 +22,12 @@
 % Parallelization and loops based on 'Create_Compiled_Values.m' located at:
 %
 % ~/Nicco/NIQ/Scripts/
+%
+%
+% Bug! For some reason the grabbing subjects takes in more than just subject names.
+% It takes in all the extra FUNC output files as well.
+% Something to do with the regex expression.
+%
 %==============================================================================================
 
 % Initialize paths
