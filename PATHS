@@ -18,5 +18,5 @@ run_network_probtrackx_by_CharIndex.sh
 run_network_probtrackx_by_SubjectID.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
-Create_Compiled_Values.m
+Create_Compiled_Values_Petersen.m
     ~/Nicco/NIQ/Scripts/

@@ -1,5 +1,5 @@
 %======================================================================================
-% Create_Compiled_Values.m
+% Create_Compiled_Values_Petersen.m
 %
 % This script performs pairwise calculations on each of the selected 264
 % nodes with every other node for every subject. These calculated values (matrices):
