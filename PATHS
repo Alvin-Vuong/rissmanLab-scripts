@@ -21,5 +21,8 @@ run_network_probtrackx_by_SubjectID.sh
 Create_Compiled_Values_Petersen.m
     ~/Nicco/NIQ/Scripts/
     
+Create_Compiled_Values_Gordon.m
+    ~/Nicco/NIQ/Scripts/
+
 Create_Behavioral_Struct.m
     ~/Nicco/NIQ/Scripts/
