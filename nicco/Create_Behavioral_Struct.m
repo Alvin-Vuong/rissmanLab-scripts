@@ -18,7 +18,6 @@
 %       ASR-DSM_Compl
 %       FS_L_Non-WM_Hypointens_Vol
 %       FS_R_Non-WM_Hypointens_Vol
-%
 %   Subject IDs must begin with a character. See below in code for handling.
 %
 % The script stores the data into a struct for later analysis. This file will be stored as:
