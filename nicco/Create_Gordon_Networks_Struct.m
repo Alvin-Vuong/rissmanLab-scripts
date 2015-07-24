@@ -82,6 +82,7 @@ for i = 1:333
     % Store network indices into struct
     Gordon_Networks.([char(networks(i)) '_L']) = net_matches_L;
     Gordon_Networks.([char(networks(i)) '_R']) = net_matches_R;
+    Gordon_Networks.(char(networks(i))) = net_matches;
 end
 
 % Save as file
