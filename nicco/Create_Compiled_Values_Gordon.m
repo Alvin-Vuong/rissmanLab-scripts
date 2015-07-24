@@ -34,11 +34,11 @@ for s = 1:length(subjs)
     % Move into subject folder
     subject_str = char(subjs(s));
     fprintf('Moving to subject: %s\n', subject_str);
-    cd([top_dir subject_str]);
+    cd([top_dir subject_str '/Gordon']);
     
-    % Check if 264 seed folders within subject
+    % Check if 333 seed folders within subject
     if length(dir(fullfile('.', 'F*'))) ~= 333
-        fprintf('Subject does not have 264 seeds...\n');
+        fprintf('Subject does not have 333 seeds...\n');
         cd(top_dir);
         continue; % Jump to next subject
     end
