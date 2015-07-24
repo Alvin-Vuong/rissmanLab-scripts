@@ -26,3 +26,9 @@ Create_Compiled_Values_Gordon.m
 
 Create_Behavioral_Struct.m
     ~/Nicco/NIQ/Scripts/
+
+Create_Gordon_Networks_Struct.m
+    ~/Nicco/NIQ/Scripts/
+
+Create_Petersen_Networks_Struct.m
+    ~/Nicco/NIQ/Scripts/
