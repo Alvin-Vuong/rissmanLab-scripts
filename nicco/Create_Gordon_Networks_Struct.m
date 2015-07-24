@@ -3,9 +3,6 @@
 % 
 % This script extracts the Gordon parcellations and the ROI indices of each network.
 %
-% Note: .xls file had to be cleaned in the following way:
-%   Parcel IDs must begin with a character. See below in code for handling.
-%
 % The script stores the data into a struct for later analysis. This file will be stored as:
 % 
 % ~/Nicco/NIQ/Network_Indices/Gordon_Networks.mat
