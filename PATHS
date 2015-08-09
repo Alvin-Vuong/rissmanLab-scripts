@@ -20,6 +20,9 @@ run_network_probtrackx_by_SubjectID.sh
     
 run_network_probtrackx_Spot_Checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
+    
+FUNC_output_cleaner.sh
+    ~/Nicco/NIQ/HCP_Scripts/
 
 Create_Compiled_Values_Petersen.m
     ~/Nicco/NIQ/Scripts/
