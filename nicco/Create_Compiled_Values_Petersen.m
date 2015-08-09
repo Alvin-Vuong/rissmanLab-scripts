@@ -15,6 +15,9 @@
 %
 % This code has an option to run in parallel with 8 workers (on seeds only).
 % Alter the code wherever 'PARALLEL:' is stated in order to enable this.
+%
+% Estimated efficiency:
+%   ~4.8 hours/subject.
 %======================================================================================
 
 % Initialize paths
@@ -30,9 +33,16 @@ regex = regexp({subjs.name},'[0-9]*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Iterate through subjects
-for s = 1:5 %length(subjs)
-    % Move into subject folder
+for s = 1:length(subjs)
+    % Check if subject is already done
     subject_str = char(subjs(s));
+    cd(save_dir);
+    if length(dir(fullfile('.', ['Subj_' subject_str '.mat']))) == 1
+        fprintf('Subject %s has already been completed...', subject_str);
+        break
+    end
+    
+    % Move into subject folder
     fprintf('Moving to subject: %s\n', subject_str);
     cd([top_dir subject_str]);
     
