@@ -30,6 +30,9 @@ Create_Compiled_Values_Petersen.m
 Create_Compiled_Values_Gordon.m
     ~/Nicco/NIQ/Scripts/
 
+average_connectivity.m
+    ~/Nicco/NIQ/Scripts/
+
 Create_Behavioral_Struct.m
     ~/Nicco/NIQ/Scripts/
 

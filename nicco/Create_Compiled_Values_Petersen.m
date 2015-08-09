@@ -30,7 +30,7 @@ regex = regexp({subjs.name},'[0-9]*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Iterate through subjects
-for s = 1:length(subjs)
+for s = 1:5 %length(subjs)
     % Move into subject folder
     subject_str = char(subjs(s));
     fprintf('Moving to subject: %s\n', subject_str);
@@ -39,6 +39,23 @@ for s = 1:length(subjs)
     % Check if 264 seed folders within subject
     if length(dir(fullfile('.', 'F*'))) ~= 264
         fprintf('Subject does not have 264 seeds...\n');
+        cd(top_dir);
+        continue; % Jump to next subject
+    end
+    
+    % Search all seeds for fdt_paths file
+    fdt = 0;
+    for ps = 1:264
+        ps_str = num2str(ps);
+        % Check if fdt_paths exists
+        cd([top_dir subject_str '/From_' ps_str]);
+        if length(dir(fullfile('.', 'fdt_paths.*'))) ~= 1
+            fdt = 1;
+            fprintf('Subject Seed %s fdt_paths does not exist...\n', ps_str);
+            break;
+        end
+    end
+    if fdt == 1
         cd(top_dir);
         continue; % Jump to next subject
     end
@@ -82,7 +99,7 @@ for s = 1:length(subjs)
                 gunzip(filename);
                 delete(filename);
             catch
-                fprintf('Already unzipped\n');
+                %fprintf('Already unzipped\n');
             end
             
             filename = filename(1:end-3);
