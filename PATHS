@@ -32,7 +32,10 @@ FUNC_output_cleaner.sh
 
 Create_Compiled_Values_Petersen.m
     ~/Nicco/NIQ/Scripts/
-    
+
+target_compressor.sh
+    ~/Nicco/NIQ/HCP_Scripts    
+
 Create_Compiled_Values_Gordon.m
     ~/Nicco/NIQ/Scripts/
 
