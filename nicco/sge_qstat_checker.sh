@@ -9,8 +9,14 @@
 # FUNC SGE load.
 ###################################################################################
 
+# Loop until shut down
 while true
 do
+  # Ping the server for current jobs per user
   sge qstat | awk '(NR>2){print $1,$4}' | sort | uniq | awk '{print $2}' | sort | uniq -c
+
+  printf "\n"
+
+  # Ping every minute
   sleep 1m
 done
