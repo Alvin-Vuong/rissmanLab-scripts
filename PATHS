@@ -24,6 +24,9 @@ run_network_probtrackx_Spot_Checker.sh
 sge_qstat_checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
+probtrackx_completion_checker.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
 FUNC_output_cleaner.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
