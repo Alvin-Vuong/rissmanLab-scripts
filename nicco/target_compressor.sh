@@ -24,7 +24,7 @@ do
   cd $j
   
   # Compress all target files
-  gzip seeds_to_*
+  gzip -f seeds_to_*
 
   # Move back to subject directory
   cd "${top_path}/100307"
