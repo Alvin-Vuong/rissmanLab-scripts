@@ -50,6 +50,16 @@ for s = 1:length(subjs)
     subject_str = file_str(6:end-4);
     fprintf('Averaging Subject %s\n', subject_str);
     
+    % Check if subject is finished already
+    cd(save_dir);
+    if length(dir(fullfile('.', file_str))) == 1
+        fprintf('%s already exists...\n', file_str);
+        continue;
+    end
+    
+    % Ensure path is correct
+    cd(top_dir);
+    
     % Load in subject connectivity matrices
     try
         load(file_str);
@@ -60,12 +70,16 @@ for s = 1:length(subjs)
 
     % Calculate averages
     mean_non_zero_avg = (mean_non_zero + mean_non_zero.') ./ 2;
-    count_non_zero_avg = (count_non_zero + count_non_zero.') ./ 2;
-    mean_non_zero_div_waytotal_avg = (mean_non_zero_div_waytotal + mean_non_zero_div_waytotal.') ./ 2;
-    count_non_zero_div_waytotal_avg = (count_non_zero_div_waytotal + count_non_zero_div_waytotal.') ./ 2;
+    voxels_non_zero_avg = (voxels_non_zero + voxels_non_zero_avg.') ./ 2;
+    volume_non_zero_avg = (volume_non_zero + volume_non_zero_avg.') ./ 2;
+    
+    %count_non_zero_avg = (count_non_zero + count_non_zero.') ./ 2;
+    %mean_non_zero_div_waytotal_avg = (mean_non_zero_div_waytotal + mean_non_zero_div_waytotal.') ./ 2;
+    %count_non_zero_div_waytotal_avg = (count_non_zero_div_waytotal + count_non_zero_div_waytotal.') ./ 2;
 
     % Save work
     fprintf('Saving averaged values for subject: %s\n', subject_str);
-    save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','count_non_zero_avg','mean_non_zero_div_waytotal_avg','count_non_zero_div_waytotal_avg');
+    save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','voxels_non_zero_avg','volume_non_zero_avg');
+    %save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','count_non_zero_avg','mean_non_zero_div_waytotal_avg','count_non_zero_div_waytotal_avg');
 end
 
