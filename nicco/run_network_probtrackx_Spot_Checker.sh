@@ -14,16 +14,17 @@
 # This checks both Gordon and Petersen seeds to see if they are complete.
 # Alter the code if you want only one type to be checked.
 # 
+# Currently altered to run on only select ranges of Petersen seeds.
+#
 # Also able to alter i and N values.
 # N: number of subjects to check
 # i: starting subject index
 #
-# *(Currently set to check only Petersen seeds)*
-# *(Currently set to check only 10 subjects)*
-# *(Currently set to start at 1st subject)*
-#
 # Note on FUNC efficiency:
 #   Sleeping for 2 minutes per 5 subjects is not slow enough for the SGE.
+#   Just keep an eye on FUNC SGE load with 'sge_qstat_checker.sh'.
+#
+# TODO: Make i and N promted entered values using read.
 #
 # Bug: At subject # input, you can input a partial match of the first subject
 #      and it will return the line number: 1.  Need regex for non-partial matches.
@@ -53,14 +54,14 @@ for j in $subj_dirs
 do
   # Only do ith to jth (j = i + N) subjects
   jumper=$(( jumper + 1 ))
-  if [ $jumper -lt 3 ] # [ $jumper -lt i ]
+  if [ $jumper -lt 30 ] # [ $jumper -lt i ]
   then
     continue
   fi
 
   # Only do N subjects
   subjNum=$(( subjNum + 1 ))
-  if [ $subjNum -eq 9 ] # [ $subjNum -eq N+1 ]
+  if [ $subjNum -eq 11 ] # [ $subjNum -eq N+1 ]
   then
     break
   fi
@@ -84,15 +85,15 @@ do
       # Check if seed folder exists
       if [ "$ps" = "${p:5}" ]
       then
-	    # Check if fdt_paths exists
-	    echo "Checking seed: $ps"
-	    cd "From_${ps}"
+	# Check if fdt_paths exists
+	echo "Checking seed: $ps"
+	cd "From_${ps}"
         if [ $(ls -d1 fdt_paths.* | wc -l) -eq 1 ]
         then
-	      foundP=1
-	      break
-	    fi
-	    break
+	  foundP=1
+	  break
+	fi
+	break
       fi
     done
       
@@ -119,8 +120,8 @@ do
       # Every 10 jobs, sleep 2 mins
       if [ $(($f % 5)) == 0 ]
       then
- 	    echo "Sleeping for 2 minutes to prevent grid clogging"
- 	    sleep 2m
+ 	echo "Sleeping for 2 minutes to prevent grid clogging"
+ 	sleep 2m
       fi
     fi
     cd "${save_top_path}/${j}"
