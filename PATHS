@@ -12,6 +12,9 @@ reslice_gordon.sh
 create_target_txts_Gordon.m
     ~/Nicco/NIQ/HCP_Scripts/
 
+bedpostX_checker.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
 run_network_probtrackx_by_CharIndex.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
