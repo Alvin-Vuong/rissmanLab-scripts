@@ -17,18 +17,18 @@ txt_dir="/space/raid6/data/rissman/Nicco/NIQ/HCP_Scripts"
 
 # Get missing .bedpostX subjects
 cd $txt_dir
-# Read in subjects
-
-# Loop through subjects
-for j in #somethingHere
+# Read in subjects and loop through them line-by-line
+while read line
 do
-  subject_folder="${bedpost_dir}/${j}"
+  # Get subject folder
+  subject_folder="${bedpost_dir}/${line}"
 
   # Launch bedpostX on grid
-  echo "Launching Subject ${j}'s bedpostX. 25s until next submission."
+  echo "Relaunching Subject ${line}'s bedpostX."
   sge qsub bedpostx $subject_folder -g
 
   # Sleep
-  sleep 25s
+  echo "15s until next submission."
+  sleep 15s
 
-done
+done < missing_bedpostX.txt
