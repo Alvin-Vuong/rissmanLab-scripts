@@ -3,7 +3,10 @@
 # bedpostX_rerun.sh
 #
 # This script relaunches the bedpost analyses for subjects missing their .bedpostX 
-# folders onto the FUNC SGE.
+# folders onto the FUNC SGE. This will not work if the folder at:
+# ~/Nicco/NIQ/EXPANSION/Bedpost_Analysis/{SubjectID}
+# is missing the required files for bedpostx. If this the case, there run:
+# 'bedpostX_reorganize.sh' on the subject first.
 #
 # Uses subject IDs from the following file:
 # ~/Nicco/NIQ/HCP_Scripts/missing_bedpostX.txt
@@ -15,11 +18,11 @@
 
 # Set paths
 bedpost_dir="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis"
-ref_dir="/space/raid6/data/rissman/Nicco/HCP_ALL/Move2Func"
 txt_dir="/space/raid6/data/rissman/Nicco/NIQ/HCP_Scripts"
 
 # Get missing .bedpostX subjects
 cd $txt_dir
+
 # Read in subjects and loop through them line-by-line
 while read line
 do
