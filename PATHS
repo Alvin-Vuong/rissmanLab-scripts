@@ -15,6 +15,9 @@ create_target_txts_Gordon.m
 bedpostX_checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
+bedpostX_reorganize.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
 bedpostX_rerun.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
