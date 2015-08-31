@@ -29,11 +29,12 @@
 % Suggested use:
 %   Run at most 2 MATLAB processes running on different ranges of subjects.
 %   Use dentate workstation (seems to be the fastest).
+%   ~3.5 hours/subject
 %
 % **Update**
 %   The code has been modified to use fslstats instead of spm_vols.
 %   This is intended to lighten the server load and make this script less 
-%   computationally heavy.
+%   computationally heavy. (No more unzipping, etc.)
 %======================================================================================
 
 % Initialize paths
