@@ -20,7 +20,7 @@
 % Note: A lot of the matrix accesses use hard-coded row-by-column values.
 %       This can be improved.
 %
-% This code is based on 'Create_Petersen_Networks_Struct.m' located at:
+% This code is based on 'Create_Gordon_Networks_Struct.m' located at:
 % 
 % ~/Nicco/NIQ/Scripts/
 %
