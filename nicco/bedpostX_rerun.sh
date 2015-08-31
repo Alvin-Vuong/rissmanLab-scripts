@@ -4,9 +4,12 @@
 #
 # This script relaunches the bedpost analyses for subjects missing their .bedpostX 
 # folders onto the FUNC SGE.
-# 
+#
 # Uses subject IDs from the following file:
 # ~/Nicco/NIQ/HCP_Scripts/missing_bedpostX.txt
+#
+# Based on the code at:
+# ~/Nicco/NIQ/HCP_Scripts/run_bedpost.sh
 #
 #####################################################################################
 
