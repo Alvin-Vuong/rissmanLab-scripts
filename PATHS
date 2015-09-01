@@ -40,13 +40,13 @@ FUNC_output_cleaner.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
 Create_Compiled_Values_Petersen.m
-    ~/Nicco/NIQ/Scripts/
-
-target_compressor.sh
-    ~/Nicco/NIQ/HCP_Scripts    
+    ~/Nicco/NIQ/Scripts/  
 
 Create_Compiled_Values_Gordon.m
     ~/Nicco/NIQ/Scripts/
+
+target_compressor.sh
+    ~/Nicco/NIQ/HCP_Scripts  
 
 average_connectivity.m
     ~/Nicco/NIQ/Scripts/
@@ -58,4 +58,7 @@ Create_Gordon_Networks_Struct.m
     ~/Nicco/NIQ/Scripts/
 
 Create_Petersen_Networks_Struct.m
+    ~/Nicco/NIQ/Scripts/
+    
+top_network_connections_Petersen.m
     ~/Nicco/NIQ/Scripts/
