@@ -16,15 +16,9 @@
 # 
 # Currently altered to run on only select ranges of Petersen seeds.
 #
-# Also able to alter i and N values.
-# N: number of subjects to check
-# i: starting subject index
-#
 # Note on FUNC efficiency:
 #   Sleeping for 2 minutes per 5 subjects is not slow enough for the SGE.
 #   Just keep an eye on FUNC SGE load with 'sge_qstat_checker.sh'.
-#
-# TODO: Make i and N promted entered values using read.
 #
 # Bug: At subject # input, you can input a partial match of the first subject
 #      and it will return the line number: 1.  Need regex for non-partial matches.
@@ -34,9 +28,8 @@
 top_path="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION"
 mask_path="/space/raid6/data/rissman/Nicco/NIQ/masks/Subject_Specific"
 targets_path="/space/raid6/data/rissman/Nicco/NIQ/Reference"
-
+missing_bedpostX_path="/space/raid6/data/rissman/Nicco/NIQ/HCP_Scripts/missing_bedpostX.txt"
 ref_dir="/space/raid6/data/rissman/Nicco/HCP_ALL/Move2Func"
-
 save_top_path="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific"
 
 # Get all candidate subject folders
@@ -49,21 +42,34 @@ jumper=0
 numNeeds=0
 f=0
 
+# Ask for starting subject # and # of subjects to run
+echo -n "Enter starting subject #: "
+read start
+echo -n "Enter # of subjects to run: "
+read amt
+
 # Loop through all subjects
 for j in $subj_dirs
 do
   # Only do ith to jth (j = i + N) subjects
   jumper=$(( jumper + 1 ))
-  if [ $jumper -lt 30 ] # [ $jumper -lt i ]
+  if [ $jumper -lt $start ]
   then
     continue
   fi
 
   # Only do N subjects
   subjNum=$(( subjNum + 1 ))
-  if [ $subjNum -eq 11 ] # [ $subjNum -eq N+1 ]
+  if [ $subjNum -eq $(( amt + 1 )) ]
   then
     break
+  fi
+
+  # Check if subject is missing .bedpostX (from .txt list)
+  if grep -Fxq "$j" $missing_bedpostX_path
+  then
+    echo "Subject $j is missing .bedpostX"
+    continue
   fi
 
   BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${j}.bedpostX"
