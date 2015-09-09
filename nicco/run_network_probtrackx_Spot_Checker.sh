@@ -75,7 +75,7 @@ do
   BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${j}.bedpostX"
   
   # Move into subject folder (Petersen seeds directory)
-  echo "Moving to Subject $j Petersen seeds"
+  echo "Moving to Subject #$jumper, ID: $j Petersen seeds"
   cd $j
 
   # Grab finished Petersen seeds
@@ -107,7 +107,7 @@ do
     if [ $foundP -eq 0 ]
     then
       # Resubmit this seed to the grid
-      echo "Relaunching Subject $j, Petersen Seed $ps on the grid..."
+      echo "Relaunching Subject #$jumper, ID: $j, Petersen Seed $ps on the grid..."
       
       # Set variables
       seed="${mask_path}/${j}_Petersen_${ps}.nii.gz"
