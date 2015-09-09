@@ -29,12 +29,11 @@
 % Suggested use:
 %   Run at most 2 MATLAB processes running on different ranges of subjects.
 %   Use dentate workstation (seems to be the fastest).
-%   ~3.5 hours/subject
 %
 % **Update**
 %   The code has been modified to use fslstats instead of spm_vols.
 %   This is intended to lighten the server load and make this script less 
-%   computationally heavy. (No more unzipping, etc.)
+%   computationally heavy.
 %======================================================================================
 
 % Initialize paths
@@ -50,7 +49,7 @@ regex = regexp({subjs.name},'[0-9]*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Iterate through subjects
-for s = 23:28 %length(subjs)
+for s = 1:length(subjs)
     % Check if subject is already done
     subject_str = char(subjs(s));
     cd(save_dir);
@@ -64,11 +63,11 @@ for s = 23:28 %length(subjs)
     cd([top_dir subject_str]);
     
     % Check if 264 seed folders within subject (Old way of checking)
-    %if length(dir(fullfile('.', 'F*'))) ~= 264
-    %    fprintf('Subject does not have 264 seeds...\n');
-    %    cd(top_dir);
-    %    continue; % Jump to next subject
-    %end
+    if length(dir(fullfile('.', 'F*'))) ~= 264
+        fprintf('Subject does not have 264 seeds...\n');
+        cd(top_dir);
+        continue; % Jump to next subject
+    end
     
     % Search all seeds for fdt_paths file
     fdt = 0;
