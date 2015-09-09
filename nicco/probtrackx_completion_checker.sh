@@ -111,19 +111,7 @@ do
       # Output number of missing seeds to this point
 #      numNeeds=$(( numNeeds + 1 ))
 #      echo $numNeeds
-	  
-      # Send probtrack job to grid
-      #sge qsub probtrackx2  -x $seed  -l --onewaycondition --omatrix1 -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s "${BEDPOST_FOLDER}/merged" -m "${BEDPOST_FOLDER}/nodif_brain_mask.nii.gz"  --dir="${top_path}/Probtrack_Subject_Specific/${j}/From_${ps}" --targetmasks=$target_list --s2tastext --os2t
-	  
-      # Increment sleep counter
-      #f=$(( f + 1 ))
-	
-      # Every 10 jobs, sleep 2 mins
-      if [ $(($f % 5)) == 0 ]
-      then
- 	echo "Sleeping for 2 minutes to prevent grid clogging"
- 	sleep 2m
-      fi
+
     fi
     cd "${save_top_path}/${j}"
   done
