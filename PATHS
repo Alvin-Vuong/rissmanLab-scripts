@@ -62,3 +62,6 @@ Create_Petersen_Networks_Struct.m
     
 create_structural_masks_Petersen.m
     ~/Nicco/NIQ/Scripts/
+
+features_structural_mask_of_functional_Petersen.m
+    ~/Nicco/NIQ/Scripts/
