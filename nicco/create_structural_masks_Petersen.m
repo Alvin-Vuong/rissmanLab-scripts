@@ -1,5 +1,5 @@
 %==========================================================================================
-% top_network_connections_Petersen.m
+% create_structural_masks_Petersen.m
 % 
 % This script takes in a Petersen network name, and finds the top x% of connections 
 % (pairs of ROIs) ranked by their average mean_non_zero connectivity values.
@@ -21,7 +21,7 @@ top_percent = .5; % Enter in decimal format
 
 % Set paths
 structural_path = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/';
-functional_path = '/space/raid6/data/rissman/Nicco/HCP_ALL/Resting_State/Petersen_FC/';
+%functional_path = '/space/raid6/data/rissman/Nicco/HCP_ALL/Resting_State/Petersen_FC/';
 network_indices_path = '/space/raid6/data/rissman/Nicco/NIQ/Network_Indices/';
 save_dir = '/space/raid6/data/rissman/Nicco/NIQ/Top_Connections/';
 
@@ -29,21 +29,20 @@ save_dir = '/space/raid6/data/rissman/Nicco/NIQ/Top_Connections/';
 load([network_indices_path 'Petersen_Networks.mat']);
 
 % Retrieve subjects using structural path
-% TODO: Retrieve only subjects with both structural and functional data
 cd(structural_path);
 subjs = dir();
 regex = regexp({subjs.name},'Subj_*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Loop over subjects
-for s = 1:2 %length(subjs)
+for s = 1 %length(subjs)
     % Grab info for subject
     file_str = char(subjs(s));
     subjectID = file_str(6:end-8);
     
     % Get subject's data
     load([structural_path 'Subj_' subjectID '_avg.mat']);
-    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+    %load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
     
     % Initialize struct for saved data
     saved = struct;
@@ -56,7 +55,8 @@ for s = 1:2 %length(subjs)
 
         % Initialize a matrix to hold pairwise connectivity values
         sizeROI = length(roiList);
-        connectivities = zeros((sizeROI*(sizeROI-1)/2), 5);
+        num_connections = sizeROI*(sizeROI-1)/2; % Number of 
+        connectivities = zeros(num_connections, 5);
 
         % Find connectivity values for each pair in ROI list
         n = 1;
@@ -71,21 +71,32 @@ for s = 1:2 %length(subjs)
             end
         end
 
-        % Take top percent of connections
+        % Calculate top percent of connections
         top_amount = top_percent*size(connectivities,1);
+        
+        % Sort by descending order
         mean_sorted = sortrows(connectivities, -3);
         volume_sorted = sortrows(connectivities, -4);
         voxels_sorted = sortrows(connectivities, -5);
 
-        % Save results
-        mean_saved = mean_sorted(1:ceil(top_amount), :);
-        volume_saved = volume_sorted(1:ceil(top_amount), :);
-        voxels_saved = voxels_sorted(1:ceil(top_amount), :);
+        % Save top % results (include midpoint if odd # of connections)
+        mean_top_saved = mean_sorted(1:ceil(top_amount), :);
+        volume_top_saved = volume_sorted(1:ceil(top_amount), :);
+        voxels_top_saved = voxels_sorted(1:ceil(top_amount), :);
+        
+        % Save bottom % results (include midpoint if odd # of connections)
+        mean_bottom_saved = mean_sorted(ceil(top_amount):num_connections, :);
+        volume_bottom_saved = volume_sorted(ceil(top_amount):num_connections, :);
+        voxels_bottom_saved = voxels_sorted(ceil(top_amount):num_connections, :);
 
         % Store into struct
-        saved.(char(networks{net})).mean = mean_saved;
-        saved.(char(networks{net})).volume = volume_saved;
-        saved.(char(networks{net})).voxels = voxels_saved;
+        saved.(char(networks{net})).mean_top = mean_top_saved;
+        saved.(char(networks{net})).volume_top = volume_top_saved;
+        saved.(char(networks{net})).voxels_top = voxels_top_saved;
+        saved.(char(networks{net})).mean_bottom = mean_bottom_saved;
+        saved.(char(networks{net})).volume_bottom = volume_bottom_saved;
+        saved.(char(networks{net})).voxels_bottom = voxels_bottom_saved;
+        
     end
 
     % Save work

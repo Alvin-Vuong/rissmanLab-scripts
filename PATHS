@@ -60,5 +60,5 @@ Create_Gordon_Networks_Struct.m
 Create_Petersen_Networks_Struct.m
     ~/Nicco/NIQ/Scripts/
     
-top_network_connections_Petersen.m
+create_structural_masks_Petersen.m
     ~/Nicco/NIQ/Scripts/
