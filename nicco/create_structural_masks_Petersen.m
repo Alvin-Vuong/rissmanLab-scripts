@@ -1,10 +1,8 @@
 %==========================================================================================
 % create_structural_masks_Petersen.m
 % 
-% This script takes in a Petersen network name, and finds the top x% of connections 
-% (pairs of ROIs) ranked by their average mean_non_zero connectivity values.
-%
-% Currently the script only performs this ranking with structural data.
+% This script takes in a subject's structural data and finds the top x% of connections 
+% (pairs of ROIs) ranked by their average connectivity values.
 %
 % Averaged structural data is located at:
 % ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/Subj_{SubjectID}_avg.mat
@@ -55,7 +53,7 @@ for s = 1 %length(subjs)
 
         % Initialize a matrix to hold pairwise connectivity values
         sizeROI = length(roiList);
-        num_connections = sizeROI*(sizeROI-1)/2; % Number of 
+        num_connections = sizeROI*(sizeROI-1)/2; % Number of pairs of ROIs
         connectivities = zeros(num_connections, 5);
 
         % Find connectivity values for each pair in ROI list
