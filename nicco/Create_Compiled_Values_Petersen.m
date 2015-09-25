@@ -49,12 +49,12 @@ regex = regexp({subjs.name},'[0-9]*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Iterate through subjects
-for s = 1:length(subjs)
+for s = 151:160 %length(subjs)
     % Check if subject is already done
     subject_str = char(subjs(s));
     cd(save_dir);
     if length(dir(fullfile('.', ['Subj_' subject_str '.mat']))) == 1
-        fprintf('Subject %s has already been completed...', subject_str);
+        fprintf('Subject %s has already been completed...\n', subject_str);
         continue
     end
     
