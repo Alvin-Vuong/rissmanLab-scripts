@@ -30,6 +30,9 @@ run_network_probtrackx_by_SubjectID.sh
 run_network_probtrackx_Spot_Checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
     
+probtrackx_max.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+    
 sge_qstat_checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
