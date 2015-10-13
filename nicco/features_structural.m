@@ -5,18 +5,10 @@ function feature_set = features_structural(type, net1, net2)
 %
 % Take in network name(s), and a type of relation (specified in "Connectivities Naming.xlsx").
 %
-% Creates a feature set containing structural connectivity values (along with their
-% corresponding ROI pairs) in descending order for each network or network pair.
+% Creates a feature set containing mean structural connectivity values in descending order for each network or network pair.
+% This is done for every subject.
 %
-% Resulting struct has 3 matrices: mean, volume, voxels (sorted accordingly).
-% Each matrix is formatted as follows:
-% Column 1: ROI #1
-% Column 2: ROI #2
-% Column 3: Mean connectivity value associated with ROI #1 and ROI #2
-% Column 4: Volume connectivity value associated with ROI #1 and ROI #2
-% Column 5: Voxels connectivity value associated with ROI #1 and ROI #2
-% Column 6: ROI #1's network code (1 for net1, 2 for net2)
-% Column 7: ROI #2's network code (^)
+% Resulting matrix has mean connectivity values as rows and subjects as columns.
 %
 % Type of feature set must be specified.
 % Allowed types are: 
@@ -75,23 +67,12 @@ subjs = dir();
 regex = regexp({subjs.name},'Subj_*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
-% Only do one subject for now. TODO: Ask how to store multiple subjects' data
-s = 1; %for s = 1:length(subjs)
-
-% Grab info for subject
-file_str = char(subjs(s));
-subjectID = file_str(6:end-4);
-    
-% Get subject's data
-load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-load([structural_path 'Subj_' subjectID '.mat']);
-
 switch nargin
     case 3
         % Internetwork Connectivities (two networks specified)
         if (strcmp(type, 'amXY_wX_wY'))
             % Type: Across Mutual XY, w/in X, w/in Y
-            
+
             % Find networks specified
             found1 = 0;
             found2 = 0;
@@ -105,7 +86,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -126,56 +107,49 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net1
-            for i = 1:(length(roiList1)-1)
-                for j = (i+1):length(roiList1)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList1(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 1;
-                    n = n + 1;
+
+                % ...Within net1
+                for i = 1:(length(roiList1)-1)
+                    for j = (i+1):length(roiList1)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList1(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net2
-            for i = 1:(length(roiList2)-1)
-                for j = (i+1):length(roiList2)
-                    connectivities(n, 1) = roiList2(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 6) = 2;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+
+                % ...Within net2
+                for i = 1:(length(roiList2)-1)
+                    for j = (i+1):length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList2(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'amXY_wX'))
             % Type: Across Mutual XY, w/in X
@@ -193,7 +167,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -214,42 +188,41 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net1
-            for i = 1:(length(roiList1)-1)
-                for j = (i+1):length(roiList1)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList1(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 1;
-                    n = n + 1;
+
+                % ...Within net1
+                for i = 1:(length(roiList1)-1)
+                    for j = (i+1):length(roiList1)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList1(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'amXY_wY'))
             % Type: Across Mutual XY, w/in Y
@@ -267,7 +240,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -288,42 +261,41 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net2
-            for i = 1:(length(roiList2)-1)
-                for j = (i+1):length(roiList2)
-                    connectivities(n, 1) = roiList2(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 6) = 2;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+
+                % ...Within net2
+                for i = 1:(length(roiList2)-1)
+                    for j = (i+1):length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList2(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'amXY'))
             % Type: Across Mutual XY
@@ -341,7 +313,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -362,28 +334,34 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'aoXY_wX_wY'))
             % Type: Across One-Way XY, w/in X, w/in Y
@@ -401,7 +379,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -422,56 +400,49 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net1
-            for i = 1:(length(roiList1)-1)
-                for j = (i+1):length(roiList1)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList1(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 1;
-                    n = n + 1;
+
+                % ...Within net1
+                for i = 1:(length(roiList1)-1)
+                    for j = (i+1):length(roiList1)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList1(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net2
-            for i = 1:(length(roiList2)-1)
-                for j = (i+1):length(roiList2)
-                    connectivities(n, 1) = roiList2(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 6) = 2;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+
+                % ...Within net2
+                for i = 1:(length(roiList2)-1)
+                    for j = (i+1):length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList2(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'aoXY_wX'))
             % Type: Across One-Way XY, w/in X
@@ -489,7 +460,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -510,42 +481,41 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net1
-            for i = 1:(length(roiList1)-1)
-                for j = (i+1):length(roiList1)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList1(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList1(i), roiList1(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 1;
-                    n = n + 1;
+
+                % ...Within net1
+                for i = 1:(length(roiList1)-1)
+                    for j = (i+1):length(roiList1)
+                        connectivities(n) = mean_non_zero_avg(roiList1(i), roiList1(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'aoXY_wY'))
             % Type: Across One-Way XY, w/in Y
@@ -563,7 +533,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -584,42 +554,41 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
-            end
-            
-            % ...Within net2
-            for i = 1:(length(roiList2)-1)
-                for j = (i+1):length(roiList2)
-                    connectivities(n, 1) = roiList2(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList2(i), roiList2(j));
-                    connectivities(n, 6) = 2;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+
+                % ...Within net2
+                for i = 1:(length(roiList2)-1)
+                    for j = (i+1):length(roiList2)
+                        connectivities(n) = mean_non_zero_avg(roiList2(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         elseif (strcmp(type, 'aoXY'))
             % Type: Across One-Way
@@ -637,7 +606,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-                % Invalid network name
+            % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -658,28 +627,33 @@ switch nargin
             sizeROI1 = length(roiList1);
             sizeROI2 = length(roiList2);
             num_connections = (sizeROI1 * sizeROI2);
-            connectivities = zeros(num_connections, 7);
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Find connectivity values for each pair...
-            % ...Across networks
-            n = 1;
-            for i = 1:length(roiList1)
-                for j = 1:length(roiList2)
-                    connectivities(n, 1) = roiList1(i);
-                    connectivities(n, 2) = roiList2(j);
-                    connectivities(n, 3) = mean_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 4) = volume_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 5) = voxels_non_zero(roiList1(i), roiList2(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 2;
-                    n = n + 1;
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Across networks
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:length(roiList1)
+                    for j = 1:length(roiList2)
+                        connectivities(n) = mean_non_zero(roiList1(i), roiList2(j));
+                        n = n + 1;
+                    end
                 end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
             end
-            
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
             
         else
             % Type is invalid
@@ -713,28 +687,34 @@ switch nargin
             
             % Initialize a matrix to hold pairwise connectivity values
             sizeROI = length(roiList);
-            num_connections = sizeROI*(sizeROI-1)/2; % Number of pairs of ROIs
-            connectivities = zeros(num_connections, 7);
-
-            % Find connectivity values for each pair in ROI list
-            n = 1;
-            for i = 1:(length(roiList)-1)
-                for j = (i+1):length(roiList)
-                    connectivities(n, 1) = roiList(i);
-                    connectivities(n, 2) = roiList(j);
-                    connectivities(n, 3) = mean_non_zero_avg(roiList(i), roiList(j));
-                    connectivities(n, 4) = volume_non_zero_avg(roiList(i), roiList(j));
-                    connectivities(n, 5) = voxels_non_zero_avg(roiList(i), roiList(j));
-                    connectivities(n, 6) = 1;
-                    connectivities(n, 7) = 1;
-                    n = n + 1;
-                end
-            end
+            num_connections = (sizeROI*(sizeROI-1)/2); % Number of pairs of ROIs
+            feature_set = zeros(num_connections, length(subjs));
             
-            % Sort by descending order and set return value
-            feature_set.mean = sortrows(connectivities, -3);
-            feature_set.volume = sortrows(connectivities, -4);
-            feature_set.voxels = sortrows(connectivities, -5);
+            % For each subject
+            for s = 1:length(subjs)
+
+                % Grab info for subject
+                file_str = char(subjs(s));
+                subjectID = file_str(6:end-4);
+
+                % Get subject's data
+                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                load([structural_path 'Subj_' subjectID '.mat']);
+            
+                % Find connectivity values for each pair...
+                % ...Within network
+                n = 1;
+                connectivities = zeros(num_connections, 1);
+                for i = 1:(length(roiList)-1)
+                    for j = (i+1):length(roiList)
+                        connectivities(n) = mean_non_zero_avg(roiList(i), roiList(j));
+                        n = n + 1;
+                    end
+                end
+
+                % Sort by descending order and set return value
+                feature_set(:, s) = sortrows(connectivities, -1);
+            end
             
         else
             % Type is invalid
