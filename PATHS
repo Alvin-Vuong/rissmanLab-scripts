@@ -77,3 +77,6 @@ features_structural_individual.m
     
 features_structural.m
     ~/Nicco/NIQ/Scripts/
+    
+features_structural_all_nets_all_subjs.m
+    ~/Nicco/NIQ/Scripts/
