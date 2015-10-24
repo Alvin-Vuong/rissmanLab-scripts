@@ -80,3 +80,6 @@ features_structural.m
     
 features_structural_all_nets_all_subjs.m
     ~/Nicco/NIQ/Scripts/
+    
+NIQ_full.m
+    ~/Nicco/NIQ/Scripts/
