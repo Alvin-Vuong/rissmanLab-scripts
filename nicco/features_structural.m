@@ -1,5 +1,5 @@
 function feature_set = features_structural(type, net1, net2)
-% 
+%
 %==========================================================================================
 % features_structural.m
 %
@@ -11,7 +11,7 @@ function feature_set = features_structural(type, net1, net2)
 % Resulting matrix has mean connectivity values as rows and subjects as columns.
 %
 % Type of feature set must be specified.
-% Allowed types are: 
+% Allowed types are:
 %   wX, amXY_wX_wY, amXY_wX, amXY_wY, amXY, aoXY_wX_wY, ao_XY_wX, ao_XY_wY, aoXY.
 % Explained below:
 % - Intranetwork Connectivities (w/in each individual network X)
@@ -34,10 +34,10 @@ function feature_set = features_structural(type, net1, net2)
 %   Uses the values in "Compiled_Values" for this.
 %
 % Note: All intranetwork connectivities are averaged.
-% 
+%
 % If only one network is specified, type must be wX. Function will return
 % an empty struct otherwise.
-% 
+%
 % If a network and its subset are given as arguments, function will return
 % an empty struct. (Example: Default_Mode_L & Default_Mode)
 %
@@ -67,12 +67,52 @@ subjs = dir();
 regex = regexp({subjs.name},'Subj_*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
+%%%%%%%%%%%%%%%%%%%%%%% Check subjects for NaNs first %%%%%%%%%%%%%%%%%%%%%%%
+
+% Maintain list of NaN subjects
+nanlist = [];
+
+% For each subject
+for s = 1:length(subjs)
+
+    % Grab info for subject
+    file_str = char(subjs(s));
+    subjectID = file_str(6:end-4);
+
+    % Get subject's data
+    load([structural_path 'Subj_' subjectID '.mat']);
+
+    % Check connectivity values for each pair...
+    for i = 1:264
+        for j = 1:264
+            % Skip diagonals
+            if i == j
+                continue;
+            end
+            val = mean_non_zero(i, j);
+            % If NaN is found, add subject to list if not added already
+            if (isnan(val))
+                if (ismember(str2num(subjectID), nanlist))
+                    continue;
+                end
+                fprintf('%s has a nan.\n', subjectID);
+                nanlist = [nanlist str2num(subjectID)];
+                continue;
+            end
+        end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%% Now process subjects excluding NaNs and incompletes %%%%%%%%%%%%
+
 switch nargin
     case 3
         % Internetwork Connectivities (two networks specified)
         if (strcmp(type, 'amXY_wX_wY'))
             % Type: Across Mutual XY, w/in X, w/in Y
-
+            
             % Find networks specified
             found1 = 0;
             found2 = 0;
@@ -86,7 +126,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -111,15 +151,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -130,7 +180,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net1
                 for i = 1:(length(roiList1)-1)
                     for j = (i+1):length(roiList1)
@@ -138,7 +188,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net2
                 for i = 1:(length(roiList2)-1)
                     for j = (i+1):length(roiList2)
@@ -146,10 +196,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY_wX'))
             % Type: Across Mutual XY, w/in X
@@ -167,7 +220,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -192,15 +245,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -211,7 +274,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net1
                 for i = 1:(length(roiList1)-1)
                     for j = (i+1):length(roiList1)
@@ -219,10 +282,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY_wY'))
             % Type: Across Mutual XY, w/in Y
@@ -240,7 +306,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -265,15 +331,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -284,7 +360,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net2
                 for i = 1:(length(roiList2)-1)
                     for j = (i+1):length(roiList2)
@@ -292,10 +368,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY'))
             % Type: Across Mutual XY
@@ -313,7 +392,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -338,16 +417,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -358,10 +446,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wX_wY'))
             % Type: Across One-Way XY, w/in X, w/in Y
@@ -379,7 +470,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -404,15 +495,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -423,7 +524,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net1
                 for i = 1:(length(roiList1)-1)
                     for j = (i+1):length(roiList1)
@@ -431,7 +532,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net2
                 for i = 1:(length(roiList2)-1)
                     for j = (i+1):length(roiList2)
@@ -439,10 +540,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wX'))
             % Type: Across One-Way XY, w/in X
@@ -460,7 +564,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -485,15 +589,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -504,7 +618,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net1
                 for i = 1:(length(roiList1)-1)
                     for j = (i+1):length(roiList1)
@@ -512,10 +626,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wY'))
             % Type: Across One-Way XY, w/in Y
@@ -533,7 +650,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -558,15 +675,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -577,7 +704,7 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % ...Within net2
                 for i = 1:(length(roiList2)-1)
                     for j = (i+1):length(roiList2)
@@ -585,10 +712,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY'))
             % Type: Across One-Way
@@ -606,7 +736,7 @@ switch nargin
                 end
             end
             if (found1 == 0 || found2 == 0)
-            % Invalid network name
+                % Invalid network name
                 fprintf('Invalid network name.\n');
                 feature_set = struct;
                 return
@@ -631,15 +761,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                
                 % Find connectivity values for each pair...
                 % ...Across networks
                 n = 1;
@@ -650,10 +790,13 @@ switch nargin
                         n = n + 1;
                     end
                 end
-
+                
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         else
             % Type is invalid
@@ -692,15 +835,25 @@ switch nargin
             
             % For each subject
             for s = 1:length(subjs)
-
+                
                 % Grab info for subject
                 file_str = char(subjs(s));
                 subjectID = file_str(6:end-4);
-
+                
+                % Check if subject is part of NaN list. If so, skip.
+                if any(str2num(subjectID)==nanlist)
+                    continue;
+                end
+                
                 % Get subject's data
-                load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                load([structural_path 'Subj_' subjectID '.mat']);
-            
+                try
+                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                    load([structural_path 'Subj_' subjectID '.mat']);
+                catch
+                    % Subject's data is partially missing. Skip.
+                    continue;
+                end
+                    
                 % Find connectivity values for each pair...
                 % ...Within network
                 n = 1;
@@ -715,6 +868,9 @@ switch nargin
                 % Sort by descending order and set return value
                 feature_set(:, s) = sortrows(connectivities, -1);
             end
+            
+            % Remove subjects with incomplete data
+            feature_set(:, all(~feature_set,1)) = [];
             
         else
             % Type is invalid

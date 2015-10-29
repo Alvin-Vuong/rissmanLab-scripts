@@ -51,6 +51,9 @@ Create_Compiled_Values_Petersen.m
 Create_Compiled_Values_Gordon.m
     ~/Nicco/NIQ/Scripts/
 
+NaN_checker.m
+    ~/Nicco/NIQ/Scripts/
+
 target_compressor.sh
     ~/Nicco/NIQ/HCP_Scripts  
 
