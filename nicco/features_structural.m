@@ -95,7 +95,7 @@ for s = 1:length(subjs)
                 if (ismember(str2num(subjectID), nanlist))
                     continue;
                 end
-                fprintf('%s has a nan.\n', subjectID);
+                %fprintf('%s has a nan.\n', subjectID);
                 nanlist = [nanlist str2num(subjectID)];
                 continue;
             end
@@ -800,7 +800,7 @@ switch nargin
             
         else
             % Type is invalid
-            fprintf('Invalid type.\n');
+            fprintf('Invalid type: %s\n', type);
             feature_set = struct;
         end
         
@@ -874,7 +874,7 @@ switch nargin
             
         else
             % Type is invalid
-            fprintf('Invalid type.\n');
+            fprintf('Invalid type: %s\n', type);
             feature_set = struct;
         end
         

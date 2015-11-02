@@ -86,3 +86,6 @@ features_structural_all_nets_all_subjs.m
     
 NIQ_full.m
     ~/Nicco/NIQ/Scripts/
+    
+Workspace_Running.m
+    ~/Nicco/NIQ/Scripts/
