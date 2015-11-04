@@ -89,3 +89,21 @@ NIQ_full.m
     
 Workspace_Running.m
     ~/Nicco/NIQ/Scripts/
+
+NIQ_full_Lasso
+    ~/Nicco/NIQ/Scripts/
+
+NIQ_full_Ridge
+    ~/Nicco/NIQ/Scripts/
+
+NIQ_full_SVR
+    ~/Nicco/NIQ/Scripts/
+
+Workspace_Running_Lasso
+    ~/Nicco/NIQ/Scripts/
+
+Workspace_Running_Ridge
+    ~/Nicco/NIQ/Scripts/
+
+Workspace_Running_SVR
+    ~/Nicco/NIQ/Scripts/
