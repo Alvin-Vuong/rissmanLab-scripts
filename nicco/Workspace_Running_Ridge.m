@@ -3,7 +3,7 @@ addpath(genpath(toolboxRoot))
 toolboxRoot=['/space/raid6/data/rissman/Nicco/NIQ/Scripts'];
 addpath(genpath(toolboxRoot))
 
-internetwork_connection_types={'amXY_wX_wY', 'amXY_wX', 'amXY_wY', 'amXY', 'aoXY_wX_wY', 'ao_XY_wX', 'ao_XY_wY', 'aoXY'};
+internetwork_connection_types={'amXY_wX_wY', 'amXY_wX', 'amXY_wY', 'amXY', 'aoXY_wX_wY', 'aoXY_wX', 'aoXY_wY', 'aoXY'};
 intranetwork_connection_types={'wX'};
 
 behavs_of_interest={'PMAT24_A_CR'};
