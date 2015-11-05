@@ -98,3 +98,6 @@ NIQ_full_SVR
 
 Workspace_Running.m
     ~/Nicco/NIQ/Scripts/
+
+output_results.sh
+    ~/Nicco/NIQ/Results/EXPANSION/
