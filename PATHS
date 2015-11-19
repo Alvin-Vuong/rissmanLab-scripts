@@ -1,5 +1,5 @@
 PATHS
------
+————————
 make_masks_from_atlas_Gordon.m
     ~/Nicco/MATLAB_PATH/NR_Scripts/General_Use/
 
@@ -21,15 +21,6 @@ bedpostX_reorganize.sh
 bedpostX_rerun.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
-run_network_probtrackx_by_CharIndex.sh
-    ~/Nicco/NIQ/HCP_Scripts/
-
-run_network_probtrackx_by_SubjectID.sh
-    ~/Nicco/NIQ/HCP_Scripts/
-    
-run_network_probtrackx_Spot_Checker.sh
-    ~/Nicco/NIQ/HCP_Scripts/
-    
 probtrackx_max.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
@@ -46,7 +37,7 @@ FUNC_output_cleaner.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
 Create_Compiled_Values_Petersen.m
-    ~/Nicco/NIQ/Scripts/  
+    ~/Nicco/NIQ/Scripts/
 
 Create_Compiled_Values_Gordon.m
     ~/Nicco/NIQ/Scripts/
@@ -83,12 +74,6 @@ features_structural.m
     
 features_structural_all_nets_all_subjs.m
     ~/Nicco/NIQ/Scripts/
-    
-NIQ_full.m
-    ~/Nicco/NIQ/Scripts/
-
-NIQ_full_Lasso
-    ~/Nicco/NIQ/Scripts/
 
 NIQ_full_Ridge
     ~/Nicco/NIQ/Scripts/
@@ -96,8 +81,29 @@ NIQ_full_Ridge
 NIQ_full_SVR
     ~/Nicco/NIQ/Scripts/
 
+NIQ_full_Lasso
+    ~/Nicco/NIQ/Scripts/
+
 Workspace_Running.m
     ~/Nicco/NIQ/Scripts/
 
 output_results.sh
     ~/Nicco/NIQ/Results/EXPANSION/
+
+————————————————————————————————————————————
+————————————————————————————————————————————
+
+Archived Scripts
+————————
+run_network_probtrackx_by_CharIndex.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
+run_network_probtrackx_by_SubjectID.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+    
+run_network_probtrackx_Spot_Checker.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
+NIQ_full.m
+    ~/Nicco/NIQ/Scripts/
+
