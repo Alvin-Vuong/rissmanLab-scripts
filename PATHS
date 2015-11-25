@@ -60,19 +60,7 @@ Create_Gordon_Networks_Struct.m
 Create_Petersen_Networks_Struct.m
     ~/Nicco/NIQ/Scripts/
     
-create_structural_masks_Petersen.m
-    ~/Nicco/NIQ/Scripts/
-
-features_structural_mask_of_functional_Petersen.m
-    ~/Nicco/NIQ/Scripts/
-    
-features_structural_individual.m
-    ~/Nicco/NIQ/Scripts/
-    
 features_structural.m
-    ~/Nicco/NIQ/Scripts/
-    
-features_structural_all_nets_all_subjs.m
     ~/Nicco/NIQ/Scripts/
 
 features_smof_upper.m
@@ -112,6 +100,18 @@ run_network_probtrackx_by_SubjectID.sh
     
 run_network_probtrackx_Spot_Checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
+
+create_structural_masks_Petersen.m
+    ~/Nicco/NIQ/Scripts/
+
+features_structural_mask_of_functional_Petersen.m
+    ~/Nicco/NIQ/Scripts/
+
+features_structural_all_nets_all_subjs.m
+    ~/Nicco/NIQ/Scripts/
+
+features_structural_individual.m
+    ~/Nicco/NIQ/Scripts/
 
 NIQ_full.m
     ~/Nicco/NIQ/Scripts/
