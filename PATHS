@@ -72,6 +72,18 @@ features_smof_lower.m
 features_smof.m
     ~/Nicco/NIQ/Scripts/
 
+features_fmos_upper.m
+    ~/Nicco/NIQ/Scripts/
+
+features_fmos_lower.m
+    ~/Nicco/NIQ/Scripts/
+
+features_fmos.m
+    ~/Nicco/NIQ/Scripts/
+
+features_sf_Interact.m
+    ~/Nicco/NIQ/Scripts/
+
 NIQ_full_Ridge
     ~/Nicco/NIQ/Scripts/
 
