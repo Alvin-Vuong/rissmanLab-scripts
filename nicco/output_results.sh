@@ -2,29 +2,11 @@
 
 # Sorted output
 
-# Prompt for type of sort
-echo -n "Available sorts 'ALL', 'LASSO', 'SVR', 'RIDGE', 'RIDGE_PEN1': "
-read sortType
+# Prompt for search term
+echo -n "Enter search term (for all, leave blank): "
+read search
 
-if [ "$sortType" = "ALL" ]
-then
-  # Grab all .txt files
-  FILES=*.txt
-elif [ "$sortType" = "LASSO" ]
-then
-  FILES=*Lasso.txt
-elif [ "$sortType" = "SVR" ]
-then
-  FILES=*SVR.txt
-elif [ "$sortType" = "RIDGE" ]
-then
-  FILES=*Ridge.txt
-elif [ "$sortType" = "RIDGE_PEN1" ]
-then
-  FILES=*Ridge_pen1.txt
-else
-  echo "Invalid input."
-fi
+FILES=*$search*.txt
 
 # Init arrays and counter
 FILENAMES[0]=""
