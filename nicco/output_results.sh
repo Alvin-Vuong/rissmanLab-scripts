@@ -2,8 +2,29 @@
 
 # Sorted output
 
-# Grab all .txt files
-FILES=*.txt
+# Prompt for type of sort
+echo -n "Available sorts 'ALL', 'LASSO', 'SVR', 'RIDGE', 'RIDGE_PEN1': "
+read sortType
+
+if [ "$sortType" = "ALL" ]
+then
+  # Grab all .txt files
+  FILES=*.txt
+elif [ "$sortType" = "LASSO" ]
+then
+  FILES=*Lasso.txt
+elif [ "$sortType" = "SVR" ]
+then
+  FILES=*SVR.txt
+elif [ "$sortType" = "RIDGE" ]
+then
+  FILES=*Ridge.txt
+elif [ "$sortType" = "RIDGE_PEN1" ]
+then
+  FILES=*Ridge_pen1.txt
+else
+  echo "Invalid input."
+fi
 
 # Init arrays and counter
 FILENAMES[0]=""
@@ -60,7 +81,6 @@ done
 i=0
 for f in $FILES
 do
-  echo "${FILENAMES[i]}"
-  echo "${VALUES[i]}"
+  echo -e "${VALUES[i]} \t ${FILENAMES[i]}"
   i=$((i+1))
 done
