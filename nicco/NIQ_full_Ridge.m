@@ -9,11 +9,11 @@ addpath(genpath(toolboxRoot))
 switch nargin
     case 3
         fprintf('Trying intranetwork...\n');
-        classification_patterns = features_structural(conn_type, Network_1);
+        [~,classification_patterns] = features_structural(conn_type, Network_1);
         fprintf('Retrieved feature set.\n');
     case 4
         fprintf('Trying internetwork...\n');
-        classification_patterns = features_structural(conn_type, Network_1, Network_2);
+        [~,classification_patterns] = features_structural(conn_type, Network_1, Network_2);
         fprintf('Retrieved feature set.\n');
 end
 

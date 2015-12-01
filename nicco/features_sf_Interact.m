@@ -1,4 +1,4 @@
-function feature_set = features_sf_Interact(type, net1, net2)
+function [subjs_used, feature_set] = features_sf_Interact(type, net1, net2)
 %
 %==========================================================================================
 % features_sf_Interact.m
@@ -68,6 +68,14 @@ cd(structural_avg_path);
 subjs = dir();
 regex = regexp({subjs.name},'Subj_*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
+
+% Keep a used subject array
+subjs_used = zeros(1, size(subjs, 1));
+for s = 1:length(subjs)
+    file_str = char(subjs(s));
+    subjectID = file_str(6:end-4);
+    subjs_used(s) = str2num(subjectID);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%% Check subjects for NaNs first %%%%%%%%%%%%%%%%%%%%%%%
 
@@ -221,6 +229,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY_wX'))
@@ -316,6 +325,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY_wY'))
@@ -411,6 +421,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'amXY'))
@@ -498,6 +509,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wX_wY'))
@@ -601,6 +613,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wX'))
@@ -696,6 +709,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY_wY'))
@@ -791,6 +805,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         elseif (strcmp(type, 'aoXY'))
@@ -878,6 +893,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         else
@@ -962,6 +978,7 @@ switch nargin
             end
             
             % Remove subjects with incomplete data
+            subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
         else

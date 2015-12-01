@@ -1,4 +1,4 @@
-function NIQ_full_SVR(behavioral_var,conn_type,Network_1,Network_2)
+function NIQ_full_Ridge_pen1(behavioral_var,conn_type,Network_1,Network_2)
 
 toolboxRoot=['/space/raid6/data/rissman/Nicco/MATLAB_PATH/'];
 addpath(genpath(toolboxRoot))
@@ -135,28 +135,29 @@ for n=1:size(selectors,2)
     train_pats = classification_patterns(:,train_idx);
     test_pats = classification_patterns(:,test_idx);
     
-    fprintf('SVR for n = %d \n', n);
+    fprintf('Ridge for n = %d \n', n);
     
-    % SVR
-    [model]=svmtrain_NR(train_labels', train_pats','-s 3 -t 1 -c 1 -q');
-    [svr_acts{n}] = svmpredict_NR(test_labels',test_pats',model,'-q');
+    %RIDGE
+    class_args.penalty = 1;
+    [scratch]=train_ridge(train_pats, train_labels, class_args);
+    [ridge_acts{n} scratchpad] = test_ridge(test_pats,test_labels,scratch);
     
 end
 
 fprintf('Finishing Classification...\n');
 
-SVR=corr(cell2mat(svr_acts)', behav_vector');
+Ridge=corr(cell2mat(ridge_acts)', behav_vector');
 
 % Output results
 fprintf('Saving results...\n\n');
 switch nargin
     case 3
-save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs)) '_SVR.txt'];
+save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs)) '_Ridge_pen1.txt'];
     case 4
-save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs)) '_SVR.txt'];
+save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs)) '_Ridge_pen1.txt'];
 end
 
-header={'SVR'};
-data=[SVR];
+header={'Ridge'};
+data=[Ridge];
 
 save_data_with_headers(header,data,save_file);
