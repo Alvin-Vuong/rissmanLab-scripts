@@ -76,8 +76,8 @@ subjs = {subjs(~cellfun('isempty',regex)).name}.';
 subjs_used = zeros(1, size(subjs, 1));
 for s = 1:length(subjs)
     file_str = char(subjs(s));
-    subjectID = file_str(6:end-4);
-    subjs_used(s) = str2num(subjectID);
+    subjectID = file_str(6:end-8);
+    subjs_used(1, s) = str2num(subjectID);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%% Check subjects for NaNs first %%%%%%%%%%%%%%%%%%%%%%%
