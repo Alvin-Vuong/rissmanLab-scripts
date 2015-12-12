@@ -252,7 +252,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -373,7 +377,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -494,7 +502,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -604,7 +616,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -736,7 +752,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -857,7 +877,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -978,7 +1002,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -1088,7 +1116,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
@@ -1195,7 +1227,11 @@ switch nargin
                 top_saved = functional_sorted(1:top_amount, :);
 
                 % Bottom % results (include midpoint if odd # of connections)
-                bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                if (top_amount_raw == top_amount)
+                    bottom_saved = functional_sorted(top_amount+1:num_connections, :);
+                else
+                    bottom_saved = functional_sorted(top_amount:num_connections, :);
+                end
                 
                 % Move results to feature set
                 feature_set(:, s) = bottom_saved(:, 3);
