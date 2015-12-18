@@ -6,9 +6,9 @@ toolboxRoot=['/space/raid6/data/rissman/Nicco/NIQ/Scripts'];
 addpath(genpath(toolboxRoot))
 
 % Loop over types of analyses
-types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact'}; % 'f'?
+types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 percent = .5;
-for t = 2:size(types, 2)
+for t = 1:size(types, 2)
     
     % Set variables of interest
     switch nargin
@@ -27,6 +27,8 @@ for t = 2:size(types, 2)
                 [subjs_used,classification_patterns] = features_fmos_lower(conn_type, percent, Network_1);
             elseif t == 6
                 [subjs_used,classification_patterns] = features_sf_Interact(conn_type, Network_1);
+            elseif t == 7
+                [subjs_used,classification_patterns] = features_functional(conn_type, Network_1);
             end
             fprintf('Retrieved feature set.\n');
         case 4
@@ -44,6 +46,8 @@ for t = 2:size(types, 2)
                 [subjs_used,classification_patterns] = features_fmos_lower(conn_type, percent, Network_1, Network_2);
             elseif t == 6
                 [subjs_used,classification_patterns] = features_sf_Interact(conn_type, Network_1, Network_2);
+            elseif t == 7
+                [subjs_used,classification_patterns] = features_functional(conn_type, Network_1, Network_2);
             end
             fprintf('Retrieved feature set.\n');
     end
@@ -79,7 +83,7 @@ for t = 2:size(types, 2)
 
     %% Classification
     fprintf('Beginning Classification...\n');
-    running_Betas=zeros(size(classification_patterns,1),1);
+    svr_acts = zeros(1, size(selectors, 2));
 
     for n=1:size(selectors,2)
         current_selector = selectors{n};
@@ -96,13 +100,13 @@ for t = 2:size(types, 2)
 
         % SVR
         [model]=svmtrain_NR(train_labels', train_pats','-s 3 -t 1 -c 1 -q');
-        [svr_acts{n}] = svmpredict_NR(test_labels',test_pats',model,'-q');
+        [svr_acts(n)] = svmpredict_NR(test_labels',test_pats',model,'-q');
 
     end
 
     fprintf('Finishing Classification...\n');
 
-    SVR=corr(cell2mat(svr_acts)', behav_vector');
+    SVR=corr(svr_acts', behav_vector');
 
     % Output results
     fprintf('Saving results...\n\n');
@@ -113,8 +117,8 @@ for t = 2:size(types, 2)
     save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR.txt'];
     end
 
-    header={'SVR'};
-    data=[SVR];
+    header = {'SVR'};
+    data = SVR;
 
     save_data_with_headers(header,data,save_file);
 end

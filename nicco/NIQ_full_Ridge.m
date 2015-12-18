@@ -6,9 +6,9 @@ toolboxRoot=['/space/raid6/data/rissman/Nicco/NIQ/Scripts'];
 addpath(genpath(toolboxRoot))
 
 % Loop over types of analyses
-types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact'}; % 'f'?
+types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 percent = .5;
-for t = 2:size(types, 2)
+for t = 1:size(types, 2)
     
     % Set variables of interest
     switch nargin
@@ -27,6 +27,8 @@ for t = 2:size(types, 2)
                 [subjs_used,classification_patterns] = features_fmos_lower(conn_type, percent, Network_1);
             elseif t == 6
                 [subjs_used,classification_patterns] = features_sf_Interact(conn_type, Network_1);
+            elseif t == 7
+                [subjs_used,classification_patterns] = features_functional(conn_type, Network_1);
             end
             fprintf('Retrieved feature set.\n');
         case 4
@@ -44,6 +46,8 @@ for t = 2:size(types, 2)
                 [subjs_used,classification_patterns] = features_fmos_lower(conn_type, percent, Network_1, Network_2);
             elseif t == 6
                 [subjs_used,classification_patterns] = features_sf_Interact(conn_type, Network_1, Network_2);
+            elseif t == 7
+                [subjs_used,classification_patterns] = features_functional(conn_type, Network_1, Network_2);
             end
             fprintf('Retrieved feature set.\n');
     end
@@ -79,8 +83,8 @@ for t = 2:size(types, 2)
 
     %% Classification
     fprintf('Beginning Classification...\n');
-    running_Betas=zeros(size(classification_patterns,1),1);
-
+    ridge_acts = zeros(1, size(selectors, 2));
+    
     for n=1:size(selectors,2)
         current_selector = selectors{n};
         train_idx = find(current_selector == 1);
@@ -97,13 +101,13 @@ for t = 2:size(types, 2)
         %RIDGE
         class_args.penalty = size(classification_patterns,1);
         [scratch]=train_ridge(train_pats, train_labels, class_args);
-        [ridge_acts{n} scratchpad] = test_ridge(test_pats,test_labels,scratch);
+        [ridge_acts(n), ~] = test_ridge(test_pats,test_labels,scratch);
 
     end
 
     fprintf('Finishing Classification...\n');
 
-    Ridge=corr(cell2mat(ridge_acts)', behav_vector');
+    Ridge=corr(ridge_acts', behav_vector');
 
     % Output results
     fprintf('Saving results...\n\n');
@@ -114,8 +118,8 @@ for t = 2:size(types, 2)
     save_file=['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge.txt'];
     end
 
-    header={'Ridge'};
-    data=[Ridge];
+    header = {'Ridge'};
+    data = Ridge;
 
     save_data_with_headers(header,data,save_file);
 end

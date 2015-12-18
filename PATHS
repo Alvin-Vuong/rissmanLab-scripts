@@ -63,6 +63,9 @@ Create_Petersen_Networks_Struct.m
 features_structural.m
     ~/Nicco/NIQ/Scripts/
 
+features_functional.m
+    ~/Nicco/NIQ/Scripts/
+
 features_smof_upper.m
     ~/Nicco/NIQ/Scripts/
 
