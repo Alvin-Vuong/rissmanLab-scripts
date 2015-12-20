@@ -1,15 +1,18 @@
-function [subjs_used, feature_set] = features_sf_Interact(type, net1, net2)
+function [subjs_used, feature_set] = features_sf_Interact(conn_type, val_type, net1, net2)
 %
 %==========================================================================================
 % features_sf_Interact.m
 %
 % Take in network name(s), and a type of relation (specified in "Connectivities Naming.xlsx").
 %
-% Creates a feature set containing products of mean structural connectivity values and functional
-% connectivity values for each network or network pair.
+% Creates a feature set containing products of mean/volume structural connectivity values and
+% functional connectivity values for each network or network pair.
 % This is done for every subject.
 %
 % Resulting matrix has connectivity products as rows and subjects as columns.
+%
+% Type of value must be specified.
+% Allowed types are: 'M' and 'V' for 'mean' and 'volume' respectively.
 %
 % Type of feature set must be specified.
 % Allowed types are:
@@ -125,872 +128,1749 @@ end
 
 %%%%%%%%%%%% Now process subjects excluding NaNs and incompletes %%%%%%%%%%%%
 
-switch nargin
-    case 3
-        % Internetwork Connectivities (two networks specified)
-        if (strcmp(type, 'amXY_wX_wY'))
-            % Type: Across Mutual XY, w/in X, w/in Y
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
+% Use volume connectivity values
+if (strcmp(val_type, 'V'))
+    switch nargin
+        case 4
+            % Internetwork Connectivities (two networks specified)
+            if (strcmp(conn_type, 'amXY_wX_wY'))
+                % Type: Across Mutual XY, w/in X, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
                     end
                 end
-                
-                % ...Within net1
-                for i = 1:(length(roiList1)-1)
-                    for j = (i+1):length(roiList1)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
-                        n = n + 1;
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY_wX'))
+                % Type: Across Mutual XY, w/in X
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
                     end
                 end
-                
-                % ...Within net2
-                for i = 1:(length(roiList2)-1)
-                    for j = (i+1):length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
-                        n = n + 1;
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY_wY'))
+                % Type: Across Mutual XY, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
                     end
                 end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'amXY_wX'))
-            % Type: Across Mutual XY, w/in X
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
                 end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY'))
+                % Type: Across Mutual XY
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wX_wY'))
+                % Type: Across One-Way XY, w/in X, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wX'))
+                % Type: Across One-Way XY, w/in X
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wY'))
+                % Type: Across One-Way XY, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY'))
+                % Type: Across One-Way
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (volume_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            else
+                % Type is invalid
+                fprintf('Invalid type: %s\n', conn_type);
                 feature_set = struct;
-                return
             end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
+
+        case 3
+            % Intranetwork Connectivities (only one network specified)
+            if (strcmp(conn_type, 'wX'))
+                % Type: w/in X
+
+                % Find networks specified
+                found1 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
                     end
                 end
-                
-                % ...Within net1
-                for i = 1:(length(roiList1)-1)
-                    for j = (i+1):length(roiList1)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
-                        n = n + 1;
+                if (found1 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                num_connections = (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
                     end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'amXY_wY'))
-            % Type: Across Mutual XY, w/in Y
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
                     end
-                end
-                
-                % ...Within net2
-                for i = 1:(length(roiList2)-1)
-                    for j = (i+1):length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
-                        n = n + 1;
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
                     end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'amXY'))
-            % Type: Across Mutual XY
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (volume_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
                     end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
                 end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'aoXY_wX_wY'))
-            % Type: Across One-Way XY, w/in X, w/in Y
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            else
+                % Type is invalid
+                fprintf('Invalid type: %s\n', conn_type);
                 feature_set = struct;
-                return
             end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % ...Within net1
-                for i = 1:(length(roiList1)-1)
-                    for j = (i+1):length(roiList1)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % ...Within net2
-                for i = 1:(length(roiList2)-1)
-                    for j = (i+1):length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'aoXY_wX'))
-            % Type: Across One-Way XY, w/in X
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % ...Within net1
-                for i = 1:(length(roiList1)-1)
-                    for j = (i+1):length(roiList1)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'aoXY_wY'))
-            % Type: Across One-Way XY, w/in Y
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % ...Within net2
-                for i = 1:(length(roiList2)-1)
-                    for j = (i+1):length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        elseif (strcmp(type, 'aoXY'))
-            % Type: Across One-Way
-            
-            % Find networks specified
-            found1 = 0;
-            found2 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                elseif (strcmp(networks{net}, net2))
-                    % Found network
-                    found2 = 1;
-                end
-            end
-            if (found1 == 0 || found2 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Network is a subset of the other
-            if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
-                fprintf('No network subsets allowed.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            roiList2 = Petersen_Networks.(net2);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            sizeROI2 = length(roiList2);
-            num_connections = (sizeROI1 * sizeROI2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                for i = 1:length(roiList1)
-                    for j = 1:length(roiList2)
-                        connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
-                        n = n + 1;
-                    end
-                end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
-            end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        else
-            % Type is invalid
-            fprintf('Invalid type: %s\n', type);
+
+        otherwise
+            % Invalid # of arguments
+            fprintf('Invalid # of arguments.\n');
             feature_set = struct;
-        end
-        
-    case 2
-        % Intranetwork Connectivities (only one network specified)
-        if (strcmp(type, 'wX'))
-            % Type: w/in X
-            
-            % Find networks specified
-            found1 = 0;
-            for net = 1:numel(networks)
-                if (strcmp(networks{net}, net1))
-                    % Found network
-                    found1 = 1;
-                end
-            end
-            if (found1 == 0)
-                % Invalid network name
-                fprintf('Invalid network name.\n');
-                feature_set = struct;
-                return
-            end
-            
-            % Retrieve networks' ROIs
-            roiList1 = Petersen_Networks.(net1);
-            
-            % Find size values
-            sizeROI1 = length(roiList1);
-            num_connections = (sizeROI1*(sizeROI1-1)/2);
-            
-            % Initialize a matrix to hold pairwise connectivity values
-            feature_set = zeros(num_connections, length(subjs));
-            
-            % For each subject
-            for s = 1:length(subjs)
-                
-                % Grab info for subject
-                file_str = char(subjs(s));
-                subjectID = file_str(6:end-8);
-                
-                % Check if subject is part of NaN list. If so, skip.
-                if any(str2num(subjectID)==nanlist)
-                    continue;
-                end
-                
-                % Check if subject is part of missing functional list. If so, skip.
-                if any(str2num(subjectID)==missingFunctional)
-                    continue;
-                end
-                
-                % Get subject's data
-                try
-                    load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
-                    load([structural_path 'Subj_' subjectID '.mat']);
-                    load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
-                catch
-                    % Subject's data is partially missing. Skip.
-                    continue;
-                end
-                
-                % Find connectivity values for each pair...
-                % ...Across networks
-                n = 1;
-                connectivities = zeros(num_connections, 1);
-                
-                % ...Within net1
-                for i = 1:(length(roiList1)-1)
-                    for j = (i+1):length(roiList1)
-                        connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
-                        n = n + 1;
+    end
+    
+% Use mean connectivity values
+elseif (strcmp(val_type, 'M'))
+    switch nargin
+        case 4
+            % Internetwork Connectivities (two networks specified)
+            if (strcmp(conn_type, 'amXY_wX_wY'))
+                % Type: Across Mutual XY, w/in X, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
                     end
                 end
-                
-                % Move results to feature set
-                feature_set(:, s) = connectivities;
-                
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY_wX'))
+                % Type: Across Mutual XY, w/in X
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY_wY'))
+                % Type: Across Mutual XY, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'amXY'))
+                % Type: Across Mutual XY
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wX_wY'))
+                % Type: Across One-Way XY, w/in X, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wX'))
+                % Type: Across One-Way XY, w/in X
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY_wY'))
+                % Type: Across One-Way XY, w/in Y
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2) + (sizeROI2*(sizeROI2-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % ...Within net2
+                    for i = 1:(length(roiList2)-1)
+                        for j = (i+1):length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList2(i), roiList2(j))) * (FC_Matrix(roiList2(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            elseif (strcmp(conn_type, 'aoXY'))
+                % Type: Across One-Way
+
+                % Find networks specified
+                found1 = 0;
+                found2 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    elseif (strcmp(networks{net}, net2))
+                        % Found network
+                        found2 = 1;
+                    end
+                end
+                if (found1 == 0 || found2 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Network is a subset of the other
+                if (strcmp(net1(1:end-2), net2) || strcmp(net2(1:end-2), net1))
+                    fprintf('No network subsets allowed.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+                roiList2 = Petersen_Networks.(net2);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                sizeROI2 = length(roiList2);
+                num_connections = (sizeROI1 * sizeROI2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+                    for i = 1:length(roiList1)
+                        for j = 1:length(roiList2)
+                            connectivities(n) = (mean_non_zero(roiList1(i), roiList2(j))) * (FC_Matrix(roiList1(i), roiList2(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            else
+                % Type is invalid
+                fprintf('Invalid type: %s\n', conn_type);
+                feature_set = struct;
             end
-            
-            % Remove subjects with incomplete data
-            subjs_used(:, all(~feature_set,1)) = [];
-            feature_set(:, all(~feature_set,1)) = [];
-            
-        else
-            % Type is invalid
-            fprintf('Invalid type: %s\n', type);
+
+        case 3
+            % Intranetwork Connectivities (only one network specified)
+            if (strcmp(conn_type, 'wX'))
+                % Type: w/in X
+
+                % Find networks specified
+                found1 = 0;
+                for net = 1:numel(networks)
+                    if (strcmp(networks{net}, net1))
+                        % Found network
+                        found1 = 1;
+                    end
+                end
+                if (found1 == 0)
+                    % Invalid network name
+                    fprintf('Invalid network name.\n');
+                    feature_set = struct;
+                    return
+                end
+
+                % Retrieve networks' ROIs
+                roiList1 = Petersen_Networks.(net1);
+
+                % Find size values
+                sizeROI1 = length(roiList1);
+                num_connections = (sizeROI1*(sizeROI1-1)/2);
+
+                % Initialize a matrix to hold pairwise connectivity values
+                feature_set = zeros(num_connections, length(subjs));
+
+                % For each subject
+                for s = 1:length(subjs)
+
+                    % Grab info for subject
+                    file_str = char(subjs(s));
+                    subjectID = file_str(6:end-8);
+
+                    % Check if subject is part of NaN list. If so, skip.
+                    if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
+
+                    % Get subject's data
+                    try
+                        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+                        load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+                    catch
+                        % Subject's data is partially missing. Skip.
+                        continue;
+                    end
+
+                    % Find connectivity values for each pair...
+                    % ...Across networks
+                    n = 1;
+                    connectivities = zeros(num_connections, 1);
+
+                    % ...Within net1
+                    for i = 1:(length(roiList1)-1)
+                        for j = (i+1):length(roiList1)
+                            connectivities(n) = (mean_non_zero_avg(roiList1(i), roiList1(j))) * (FC_Matrix(roiList1(i), roiList1(j)));
+                            n = n + 1;
+                        end
+                    end
+
+                    % Move results to feature set
+                    feature_set(:, s) = connectivities;
+
+                end
+
+                % Remove subjects with incomplete data
+                subjs_used(:, all(~feature_set,1)) = [];
+                feature_set(:, all(~feature_set,1)) = [];
+
+            else
+                % Type is invalid
+                fprintf('Invalid type: %s\n', conn_type);
+                feature_set = struct;
+            end
+
+        otherwise
+            % Invalid # of arguments
+            fprintf('Invalid # of arguments.\n');
             feature_set = struct;
-        end
-        
-    otherwise
-        % Invalid # of arguments
-        fprintf('Invalid # of arguments.\n');
-        feature_set = struct;
+    end
+    
+else
+    fprintf('Invalid val_type.\n');
+    feature_set = struct;
 end
 
 end

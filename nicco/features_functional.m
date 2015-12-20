@@ -1,4 +1,4 @@
-function [subjs_used, feature_set] = features_functional(type, net1, net2)
+function [subjs_used, feature_set] = features_functional(conn_type, net1, net2)
 %
 %==========================================================================================
 % features_functional.m
@@ -24,7 +24,8 @@ function [subjs_used, feature_set] = features_functional(type, net1, net2)
 %   - across mutual XY, w/in Y                          amXY_wY
 %   - across mutual XY                                  amXY
 %
-% Functional data does not change with respect to direction (so one-way is not needed)
+% Functional data does not change with respect to direction (so one-way is not needed).
+% Functional data does not use volumetric values either (so val_type is not needed).
 %
 % If only one network is specified, type must be wX. Function will return
 % an empty struct otherwise.
@@ -121,7 +122,7 @@ end
 switch nargin
     case 3
         % Internetwork Connectivities (two networks specified)
-        if (strcmp(type, 'amXY_wX_wY'))
+        if (strcmp(conn_type, 'amXY_wX_wY'))
             % Type: Across Mutual XY, w/in X, w/in Y
             
             % Find networks specified
@@ -234,7 +235,7 @@ switch nargin
             subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
-        elseif (strcmp(type, 'amXY_wX'))
+        elseif (strcmp(conn_type, 'amXY_wX'))
             % Type: Across Mutual XY, w/in X
             
             % Find networks specified
@@ -337,7 +338,7 @@ switch nargin
             subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
-        elseif (strcmp(type, 'amXY_wY'))
+        elseif (strcmp(conn_type, 'amXY_wY'))
             % Type: Across Mutual XY, w/in Y
             
             % Find networks specified
@@ -440,7 +441,7 @@ switch nargin
             subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
-        elseif (strcmp(type, 'amXY'))
+        elseif (strcmp(conn_type, 'amXY'))
             % Type: Across Mutual XY
             
             % Find networks specified
@@ -533,31 +534,31 @@ switch nargin
             subjs_used(:, all(~feature_set,1)) = [];
             feature_set(:, all(~feature_set,1)) = [];
             
-        elseif (strcmp(type, 'aoXY_wX_wY'))
+        elseif (strcmp(conn_type, 'aoXY_wX_wY'))
             % Type: Across One-Way XY, w/in X, w/in Y
-            fprintf('Functional does not support: %s\n', type);
+            fprintf('Functional does not support: %s\n', conn_type);
             feature_set = struct;
-        elseif (strcmp(type, 'aoXY_wX'))
+        elseif (strcmp(conn_type, 'aoXY_wX'))
             % Type: Across One-Way XY, w/in X
-            fprintf('Functional does not support: %s\n', type);
+            fprintf('Functional does not support: %s\n', conn_type);
             feature_set = struct;
-        elseif (strcmp(type, 'aoXY_wY'))
+        elseif (strcmp(conn_type, 'aoXY_wY'))
             % Type: Across One-Way XY, w/in Y
-            fprintf('Functional does not support: %s\n', type);
+            fprintf('Functional does not support: %s\n', conn_type);
             feature_set = struct;
-        elseif (strcmp(type, 'aoXY'))
+        elseif (strcmp(conn_type, 'aoXY'))
             % Type: Across One-Way
-            fprintf('Functional does not support: %s\n', type);
+            fprintf('Functional does not support: %s\n', conn_type);
             feature_set = struct;
         else
             % Type is invalid
-            fprintf('Functional does not support: %s\n', type);
+            fprintf('Functional does not support: %s\n', conn_type);
             feature_set = struct;
         end
         
     case 2
         % Intranetwork Connectivities (only one network specified)
-        if (strcmp(type, 'wX'))
+        if (strcmp(conn_type, 'wX'))
             % Type: w/in X
             
             % Find networks specified
@@ -641,7 +642,7 @@ switch nargin
             
         else
             % Type is invalid
-            fprintf('Invalid type: %s\n', type);
+            fprintf('Invalid type: %s\n', conn_type);
             feature_set = struct;
         end
         
