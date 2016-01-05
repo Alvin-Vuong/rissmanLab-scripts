@@ -9,8 +9,8 @@ addpath(genpath(toolboxRoot))
 types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 val_types = {'M', 'V'};
 percent = .5;
-for t = 1:size(types, 2)
-    for tt = 2:size(val_types, 2) %1
+for t = 1%:size(types, 2)
+    for tt = 1%:size(val_types, 2)
         % Set variables of interest
         switch nargin
             case 3
@@ -125,13 +125,13 @@ for t = 1:size(types, 2)
         switch nargin
             case 3
                 if tt == 1
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1_Mean.txt'];
                 elseif tt == 2
                     save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1_Volume.txt'];
                 end
             case 4
                 if tt == 1
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1_Mean.txt'];
                 elseif tt == 2
                     save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_Ridge_pen1_Volume.txt'];
                 end
