@@ -25,7 +25,7 @@
 ###################################################################################
 
 # Set maximum server load
-maxLoad=1000
+maxLoad=20
 
 # Set paths
 top_path="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION"
