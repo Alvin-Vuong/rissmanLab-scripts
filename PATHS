@@ -102,6 +102,12 @@ Workspace_Running.m
 output_results.sh
     ~/Nicco/NIQ/Results/EXPANSION/
 
+NIQ_full_Ridge_Pen_Varied.m
+    ~/Nicco/NIQ/Scripts/
+
+NIQ_full_SVR_Varied.m
+    ~/Nicco/NIQ/Scripts/
+
 ————————————————————————————————————————————
 ————————————————————————————————————————————
 
