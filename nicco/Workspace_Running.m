@@ -21,6 +21,35 @@ behavs_of_interest = {'PMAT24_A_CR'};
 Network_1 = 'Default_Mode';
 Network_2 = 'Salience_w_Cingulo_Opercular';
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork  Ridge  Varied  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% aoXY_wY  Interact  0:.5:100  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%             Mean             %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for i = 3 %1:size(internetwork_oneway_connection_types,2)
+    for j = 1 %:size(behavs_of_interest,2)
+        fprintf('Starting Ridge: %s %s %s\n', internetwork_oneway_connection_types{i}, Network_1, Network_2);
+        try NIQ_full_Ridge_Pen_Varied(behavs_of_interest{j},internetwork_oneway_connection_types{i},Network_1,Network_2); 
+        catch
+            continue
+        end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork   SVR   Varied  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% aoXY_wY  Interact  0:.5:100  %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%    epsilon/nu       Mean     %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   linear/poly/rad/sigmoid    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for i = 1:size(internetwork_oneway_connection_types,2)
+    for j = 1:size(behavs_of_interest,2)
+        fprintf('Starting SVR: %s %s %s\n', internetwork_oneway_connection_types{i}, Network_1, Network_2);
+        try NIQ_full_SVR_Varied(behavs_of_interest{j},internetwork_oneway_connection_types{i},Network_1,Network_2); 
+        catch
+            continue
+        end
+    end
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Intranetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 % Intranetwork Ridge only
@@ -33,7 +62,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%}
+
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting Ridge: %s %s\n', intranetwork_connection_types{i}, Network_2);
@@ -43,7 +72,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%{
+
 % Pen = 1
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -54,7 +83,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%}
+
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting Ridge: %s %s\n', intranetwork_connection_types{i}, Network_2);
@@ -64,8 +93,8 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%{
-% Intranetwork SVR Only
+
+% Intranetwork SVR
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_1);
@@ -75,7 +104,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%}
+
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_2);
@@ -85,8 +114,8 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%{
-% Intranetwork Lasso Only
+
+% Intranetwork Lasso
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting Lasso: %s %s\n', intranetwork_connection_types{i}, Network_1);
@@ -110,7 +139,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 % Internetwork Ridge Only
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -169,7 +198,7 @@ for i = 1:size(internetwork_oneway_connection_types,2)
     end
 end
 
-% Internetwork SVR Only
+% Internetwork SVR
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s %s\n', internetwork_mutual_connection_types{i}, Network_1, Network_2);
@@ -197,8 +226,8 @@ for i = 1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
-%{
-% Internetwork Lasso Only
+
+% Internetwork Lasso
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting Lasso: %s %s %s\n', internetwork_mutual_connection_types{i}, Network_1, Network_2);
@@ -227,3 +256,4 @@ for i = 1:size(internetwork_oneway_connection_types,2)
     end
 end
 %}
+
