@@ -3,10 +3,10 @@
 # Sorted output
 
 # Prompt for search term
-echo -n "Enter search term (for all, leave blank): "
+echo -n "Enter search term (use regex): "
 read search
 
-FILES=*$search*.txt
+FILES=$search.txt
 
 # Init arrays and counter
 FILENAMES[0]=""
