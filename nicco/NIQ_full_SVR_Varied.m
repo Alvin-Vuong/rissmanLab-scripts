@@ -64,7 +64,7 @@ for t = 6 %1:size(types, 2)
         end
            
         % Vary the ridge penalty (from 0 to 100 incrementally by .5) -c
-        for pen = 0:.5:100
+        for pen = .5:.5:100
             % Vary the kernel type (linear, polynomial, radial basis fn, sigmoid) -t
             for kern_t = 0:3
                 % Vary the SVR type (epsilon vs. nu) -s
