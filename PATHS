@@ -108,6 +108,9 @@ NIQ_full_Ridge_Pen_Varied.m
 NIQ_full_SVR_Varied.m
     ~/Nicco/NIQ/Scripts/
 
+license_listen.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
 ————————————————————————————————————————————
 ————————————————————————————————————————————
 
