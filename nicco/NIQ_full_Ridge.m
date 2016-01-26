@@ -9,8 +9,8 @@ addpath(genpath(toolboxRoot))
 types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 val_types = {'M', 'V'};
 percent = .5;
-for t = 1%:size(types, 2)
-    for tt = 1%:size(val_types, 2)
+for t = 1:size(types, 2)
+    for tt = 1:size(val_types, 2)
         % Set variables of interest
         switch nargin
             case 3
@@ -76,14 +76,32 @@ for t = 1%:size(types, 2)
         % Initialize a vector for behavioral values for each subject
         temp_behav = zeros(1, length(subjs_used));
 
-        % Loop through subjects
-        for s = 1:length(subjs_used)
-
+        % Make sure non-empty data
+        init_subjs_used_size = length(subjs_used);
+        s = 1;
+        while (s <= init_subjs_used_size)
+            
             % Grab info for subject
             subjectID = subjs_used(s);
 
             % Grab subject's behavioral value
             temp_behav(s) = all_behave.(['Subject' num2str(subjectID)]).(behavioral_var);
+            
+            % If NaN, remove subject from subjs_used and corresponding features
+            if (isnan(temp_behav(s)))
+                init_subjs_used_size = init_subjs_used_size - 1;
+                if (s == 1)
+                    subjs_used = subjs_used(2:end);
+                    temp_behav = temp_behav(2:end);
+                    classification_patterns = classification_patterns(:, 2:end);
+                else
+                    subjs_used = [subjs_used(1:s-1) subjs_used(s+1:end)];
+                    temp_behav = [temp_behav(1:s-1) temp_behav(s+1:end)];
+                    classification_patterns = [classification_patterns(:, 1:s-1) classification_patterns(:, s+1:end)];
+                end
+            else
+                s = s + 1;
+            end
         end
 
         % Cross Validation
