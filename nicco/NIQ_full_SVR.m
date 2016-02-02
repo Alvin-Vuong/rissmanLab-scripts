@@ -128,7 +128,7 @@ for t = 1:size(types, 2)
             fprintf('SVR for n = %d \n', n);
 
             % SVR
-            [model]=svmtrain_NR(train_labels', train_pats','-s 3 -t 1 -c 1 -q');
+            [model]=svmtrain_NR(train_labels', train_pats','-s 4 -t 0 -c 1 -q');
             [svr_acts(n)] = svmpredict_NR(test_labels',test_pats',model,'-q');
 
         end

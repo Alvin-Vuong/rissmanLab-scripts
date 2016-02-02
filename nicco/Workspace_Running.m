@@ -15,16 +15,31 @@ internetwork_oneway_connection_types = {'aoXY_wX_wY', 'aoXY_wX', 'aoXY_wY', 'aoX
 intranetwork_connection_types={'wX'};
 
 % Choose behavioral variables of interest
-behavs_of_interest = {'PMAT24_A_CR'};
+%behavs_of_interest = {'PMAT24_A_CR'};
+behavs_of_interest = {'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'PosAffect_Unadj'};
 
-% Choose networks of interest
+%{
+% Choose networks of interest (specific)
 Network_1 = 'Default_Mode';
 Network_2 = 'Salience_w_Cingulo_Opercular';
-%{
+%}
+
+% Choose networks of interest (for looping)
+%Networks = {'Subcortical','Salience_w_Cingulo_Opercular','Cingulo_Opercular','Salience','Auditory','Sensory_Somatomotor_Hand','Memory_Retrieval','Visual','Ventral_Attention','Fronto_Parietal','Cerebellar','Dorsal_Attention','Sensory_Somatomotor_Mouth'};
+Networks = {'Default_Mode','Subcortical','Salience_w_Cingulo_Opercular','Cingulo_Opercular','Salience','Auditory','Sensory_Somatomotor_Hand','Memory_Retrieval','Visual','Ventral_Attention','Fronto_Parietal','Cerebellar','Dorsal_Attention','Sensory_Somatomotor_Mouth'};
+
+for n1 = 1:size(networks,2)
+    %for n2 = 1:size(networks,2)  %TODO: Handshake Problem Implementation
+Network_1 = Networks{n1};
+%Network_2 = Networks{n2};
+
+%===================================================================================
+% Optimizations
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork  Ridge  Varied  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% aoXY_wY  Interact  0:.5:100  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%             Mean             %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 for i = 3 %1:size(internetwork_oneway_connection_types,2)
     for j = 1 %:size(behavs_of_interest,2)
         fprintf('Starting Ridge: %s %s %s\n', internetwork_oneway_connection_types{i}, Network_1, Network_2);
@@ -39,7 +54,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%% aoXY_wY  Interact  0:.5:100  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%    epsilon/nu       Mean     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%   linear/poly/rad/sigmoid    %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 for i = 3 %1:size(internetwork_oneway_connection_types,2)
     for j = 1 %:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s %s\n', internetwork_oneway_connection_types{i}, Network_1, Network_2);
@@ -49,9 +64,12 @@ for i = 3 %1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
+%}
+%===================================================================================
+% Regular Iterations
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Intranetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
+
 % Intranetwork Ridge only
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -135,11 +153,11 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
+
 % Internetwork Ridge Only
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -255,5 +273,5 @@ for i = 1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
-%}
 
+end
