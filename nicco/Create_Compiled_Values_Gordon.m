@@ -48,17 +48,17 @@ top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Speci
 cd(top_dir);
 
 % Iterate through subjects
-for s = 1:127 %length(subjs)
+for s = 1:1 %127 %length(subjs)
     % Check if subject is already done
-    subject_str = char(subjs(s));
+    subject_str = num2str(subjs(s));
     cd(save_dir);
     if length(dir(fullfile('.', ['Subj_' subject_str '.mat']))) == 1
-        fprintf('Subject %s, %s has already been completed...\n', s, subject_str);
+        fprintf('Subject %s, %s has already been completed...\n', num2str(s), subject_str);
         continue
     end
     
     % Move into subject folder
-    fprintf('Moving to subject: %s, %s\n', s, subject_str);
+    fprintf('Moving to subject: %s, %s\n', num2str(s), subject_str);
     cd([top_dir subject_str '/Gordon/']);
     
     % Check if 333 seed folders within subject (Old way of checking)
@@ -209,7 +209,7 @@ for s = 1:127 %length(subjs)
     end
     
     % Save work
-    fprintf('Saving compiled values for subject: %s, %s\n', s, subject_str);
+    fprintf('Saving compiled values for subject: %s, %s\n', num2str(s), subject_str);
     save([save_dir 'Subj_' subject_str '.mat'],'mean_non_zero','volume_non_zero');
     %save([save_dir 'Subj_' subject_str '.mat'],'mean_non_zero','count_non_zero','mean_non_zero_div_waytotal','count_non_zero_div_waytotal');
 
