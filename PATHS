@@ -23,9 +23,6 @@ bedpostX_rerun.sh
 
 probtrackx_max.sh
     ~/Nicco/NIQ/HCP_Scripts/
-
-make_dirs.sh
-    ~/Nicco/NIQ/HCP_Scripts/
     
 sge_qstat_checker.sh
     ~/Nicco/NIQ/HCP_Scripts/
@@ -123,6 +120,9 @@ run_network_probtrackx_by_SubjectID.sh
     ~/Nicco/NIQ/HCP_Scripts/
     
 run_network_probtrackx_Spot_Checker.sh
+    ~/Nicco/NIQ/HCP_Scripts/
+
+make_dirs.sh
     ~/Nicco/NIQ/HCP_Scripts/
 
 create_structural_masks_Petersen.m

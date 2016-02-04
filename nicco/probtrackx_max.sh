@@ -25,7 +25,7 @@
 ###################################################################################
 
 # Set maximum server load
-maxLoad=20
+maxLoad=100
 
 # Set paths
 top_path="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION"
@@ -144,34 +144,19 @@ then
 elif [ "$type" = "G" ]
 then
   echo "Type: Gordon"
-  # Loop through all subjects
-  for j in $subj_dirs
+  c=0
+
+  # Grab subjects used from Petersen workflow and loop over them
+  file="/space/raid6/data/rissman/Nicco/NIQ/HCP_Scripts/subjsUsed.txt"
+  while IFS= read line
   do
-    # Only do ith to jth (j = i + N) subjects
-    jumper=$(( jumper + 1 ))
-    if [ $jumper -lt $start ]
-    then
-      continue
-    fi
 
-    # Only do N subjects
-    subjNum=$(( subjNum + 1 ))
-    if [ $subjNum -eq $(( amt + 1 )) ]
-    then
-      break
-    fi
-
-    # Check if subject is missing .bedpostX (from .txt list)
-    if grep -Fxq "$j" $missing_bedpostX_path
-    then
-      echo "Subject $j is missing .bedpostX"
-      continue
-    fi
-
-    BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${j}.bedpostX"
+    echo "$line"
+    c=$(( c + 1 ))
+    BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${line}.bedpostX"
     
     # Move into subject folder (Gordon seeds directory)
-    echo "Moving to Subject #$jumper, ID: $j Gordon seeds"
+    echo "Moving to Subject #$c, ID: $line Gordon seeds"
     cd $j
     
     # Check if Gordon folder exists, if not, create it
@@ -195,16 +180,16 @@ then
       do
 	# Check if seed folder exists
         if [ "$ps" = "${p:5}" ]
-	then
+        then
 	  # Check if fdt_paths exists
-	  echo "Checking seed: $ps"
-	  cd "From_${ps}"
+          echo "Checking seed: $ps"
+          cd "From_${ps}"
           if [ $(ls -d1 fdt_paths.* | wc -l) -eq 1 ]
           then
-	    foundP=1
-	    break
-	  fi
-	  break
+            foundP=1
+            break
+          fi
+          break
         fi
       done
       
@@ -212,28 +197,126 @@ then
       if [ $foundP -eq 0 ]
       then
         # Resubmit this seed to the grid
-        echo "Relaunching Subject #$jumper, ID: $j, Gordon Seed $ps on the grid..."
+        echo "Relaunching Subject #$c, ID: $line, Gordon Seed $ps on the grid..."
         
         # Set variables
-        seed="${mask_path}/${j}_Gordon_${ps}.nii.gz"
-        target_list="${targets_path}/${j}_Gordon_From_${ps}.txt"
+        seed="${mask_path}/${line}_Gordon_${ps}.nii.gz"
+        target_list="${targets_path}/${line}_Gordon_From_${ps}.txt"
       
         # Check if FUNC SGE is overloaded
         while [ $( sge qstat | awk '(NR>2){print $1}' | wc -l ) -ge $maxLoad ]
         do
-	  echo "Server is overloaded. Sleeping 15 minutes..."
-	  sleep 15m
+          echo "Server is overloaded. Sleeping 15 minutes..."
+          sleep 15m
         done
 
         # Send probtrack job to grid
-        sge qsub probtrackx2  -x $seed  -l --onewaycondition --omatrix1 -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s "${BEDPOST_FOLDER}/merged" -m "${BEDPOST_FOLDER}/nodif_brain_mask.nii.gz"  --dir="${top_path}/Probtrack_Subject_Specific/${j}/Gordon/From_${ps}" --targetmasks=$target_list --s2tastext --os2t
+        sge qsub probtrackx2  -x $seed  -l --onewaycondition --omatrix1 -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s "${BEDPOST_FOLDER}/merged" -m "${BEDPOST_FOLDER}/nodif_brain_mask.nii.gz"  --dir="${top_path}/Probtrack_Subject_Specific/${line}/Gordon/From_${ps}" --targetmasks=$target_list --s2tastext --os2t
 
       fi
-      cd "${save_top_path}/${j}/Gordon"
+      cd "${save_top_path}/${line}/Gordon"
     done
+
     # Move back to subjects directory
     cd $save_top_path
-  done
+
+  done <"$file"
+
+
+
+# Code here is for Gordon regular workflow
+
+  # Loop through all subjects
+  #for j in $subj_dirs
+  #do 
+
+    # Only do ith to jth (j = i + N) subjects
+    #jumper=$(( jumper + 1 ))
+    #if [ $jumper -lt $start ]
+    #then
+    #  continue
+    #fi
+
+    # Only do N subjects
+    #subjNum=$(( subjNum + 1 ))
+    #if [ $subjNum -eq $(( amt + 1 )) ]
+    #then
+    #  break
+    #fi
+
+    # Check if subject is missing .bedpostX (from .txt list)
+    #if grep -Fxq "$j" $missing_bedpostX_path
+    #then
+    #  echo "Subject $j is missing .bedpostX"
+    #  continue
+    #fi
+
+    #BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${j}.bedpostX"
+    
+    # Move into subject folder (Gordon seeds directory)
+    #echo "Moving to Subject #$jumper, ID: $j Gordon seeds"
+    #cd $j
+    
+    # Check if Gordon folder exists, if not, create it
+    #if [ $(ls -d1 Gordon | wc -l) -eq 1 ]
+    #then
+    #  cd Gordon
+    #else
+    #  mkdir Gordon
+    #  cd Gordon
+    #fi
+    
+    # Grab finished Gordon seeds
+    #gordon_seeds=$(ls -d F*)
+  
+    # Loop through potential seeds
+    #for ((ps = 1; ps <= 333; ps++))
+    #do
+      # Loop through finished seeds
+    #  foundP=0
+    #  for p in $gordon_seeds
+    #  do
+	# Check if seed folder exists
+    #    if [ "$ps" = "${p:5}" ]
+    #    then
+	  # Check if fdt_paths exists
+    #      echo "Checking seed: $ps"
+    #      cd "From_${ps}"
+    #      if [ $(ls -d1 fdt_paths.* | wc -l) -eq 1 ]
+    #      then
+    #        foundP=1
+    #        break
+    #      fi
+    #      break
+    #    fi
+    #  done
+      
+      # Seed not found among finished seeds
+    #  if [ $foundP -eq 0 ]
+    #  then
+        # Resubmit this seed to the grid
+    #    echo "Relaunching Subject #$jumper, ID: $j, Gordon Seed $ps on the grid..."
+        
+        # Set variables
+    #    seed="${mask_path}/${j}_Gordon_${ps}.nii.gz"
+    #    target_list="${targets_path}/${j}_Gordon_From_${ps}.txt"
+      
+        # Check if FUNC SGE is overloaded
+    #    while [ $( sge qstat | awk '(NR>2){print $1}' | wc -l ) -ge $maxLoad ]
+    #    do
+    #      echo "Server is overloaded. Sleeping 15 minutes..."
+    #      sleep 15m
+    #    done
+
+        # Send probtrack job to grid
+    #    sge qsub probtrackx2  -x $seed  -l --onewaycondition --omatrix1 -c 0.2 -S 2000 --steplength=0.5 -P 5000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd -s "${BEDPOST_FOLDER}/merged" -m "${BEDPOST_FOLDER}/nodif_brain_mask.nii.gz"  --dir="${top_path}/Probtrack_Subject_Specific/${j}/Gordon/From_${ps}" --targetmasks=$target_list --s2tastext --os2t
+
+    #  fi
+    #  cd "${save_top_path}/${j}/Gordon"
+    #done
+    # Move back to subjects directory
+    #cd $save_top_path
+  #done
 
 # Invalid type entered
 else

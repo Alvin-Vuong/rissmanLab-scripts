@@ -2,22 +2,22 @@
 % average_connectivity.m
 % 
 % This script takes the connectivity matrices resulting from 
-% Create_Compiled_Values_Petersen.m located at:
+% Create_Compiled_Values_Petersen.m (or Gordon) located at:
 % 
 % ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/{SubjectID}.mat
+% ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Gordon/{SubjectID}.mat
 % 
 % and finds the average connectivity value between each node-pair (1-2, 2-1) for
 % each matrix type.  Then it stores these values into new matrices called:
 %   mean_non_zero_avg
-%   count_non_zero_avg
-%   mean_non_zero_div_waytotal_avg
-%   count_non_zero_div_waytotal_avg
+%   volume_non_zero_avg
 % 
 % into a new file loacted at:
 % 
-% ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/{SubjectID}_avg.mat
-% 
-% Rows & columns of these matrices represent each ROI node in the Petersen parcellation
+% ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/{SubjectID}_avg.mat
+% ~/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/Gordon/{SubjectID}_avg.mat
+%
+% Rows & columns of these matrices represent each ROI node in the Petersen/Gordon parcellation
 %
 % For example, row 1 column 3 will contain the average connectivity value between
 %   Petersen node 1 to Petersen node 3.  For simplicity, row 3 column 1 will contain
@@ -32,8 +32,12 @@
 %========================================================================================
 
 % Initialize paths
-save_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/';
-top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/';
+% Petersen
+%save_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/';
+%top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/';
+% Gordon
+save_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Gordon/Average_Values/';
+top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Gordon/';
 
 % Go to top directory
 cd(top_dir);
@@ -52,7 +56,7 @@ for s = 1:length(subjs)
     
     % Check if subject is finished already
     cd(save_dir);
-    if length(dir(fullfile('.', file_str))) == 1
+    if length(dir(fullfile('.', ['Subj_' subject_str '_avg.mat']))) == 1
         fprintf('%s already exists...\n', file_str);
         continue;
     end
@@ -70,8 +74,8 @@ for s = 1:length(subjs)
 
     % Calculate averages
     mean_non_zero_avg = (mean_non_zero + mean_non_zero.') ./ 2;
-    voxels_non_zero_avg = (voxels_non_zero + voxels_non_zero_avg.') ./ 2;
-    volume_non_zero_avg = (volume_non_zero + volume_non_zero_avg.') ./ 2;
+    %voxels_non_zero_avg = (voxels_non_zero + voxels_non_zero.') ./ 2;
+    volume_non_zero_avg = (volume_non_zero + volume_non_zero.') ./ 2;
     
     %count_non_zero_avg = (count_non_zero + count_non_zero.') ./ 2;
     %mean_non_zero_div_waytotal_avg = (mean_non_zero_div_waytotal + mean_non_zero_div_waytotal.') ./ 2;
@@ -79,7 +83,8 @@ for s = 1:length(subjs)
 
     % Save work
     fprintf('Saving averaged values for subject: %s\n', subject_str);
-    save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','voxels_non_zero_avg','volume_non_zero_avg');
+    save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','volume_non_zero_avg');
+    %save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','voxels_non_zero_avg','volume_non_zero_avg');
     %save([save_dir 'Subj_' subject_str '_avg.mat'],'mean_non_zero_avg','count_non_zero_avg','mean_non_zero_div_waytotal_avg','count_non_zero_div_waytotal_avg');
 end
 

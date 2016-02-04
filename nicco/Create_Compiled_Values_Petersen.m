@@ -22,7 +22,7 @@
 % This code has an option to run in parallel with 8 workers (on seeds only).
 % Alter the code wherever 'PARALLEL:' is stated in order to enable this.
 %
-% Estimated efficiency:
+% Estimated runtime:
 %   ~5-6 hours/subject on typical server load.
 %   ~2-3 hours/subject on light server load.
 %
@@ -49,7 +49,7 @@ regex = regexp({subjs.name},'[0-9]*');
 subjs = {subjs(~cellfun('isempty',regex)).name}.';
 
 % Iterate through subjects
-for s = 151:160 %length(subjs)
+for s = 390:406 %length(subjs)
     % Check if subject is already done
     subject_str = char(subjs(s));
     cd(save_dir);
