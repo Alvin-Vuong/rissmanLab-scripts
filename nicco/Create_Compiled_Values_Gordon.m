@@ -48,7 +48,7 @@ top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Speci
 cd(top_dir);
 
 % Iterate through subjects
-for s = 1:1 %127 %length(subjs)
+for s = 1:length(subjs)
     % Check if subject is already done
     subject_str = num2str(subjs(s));
     cd(save_dir);
@@ -63,7 +63,7 @@ for s = 1:1 %127 %length(subjs)
     
     % Check if 333 seed folders within subject (Old way of checking)
     if length(dir(fullfile('.', 'F*'))) ~= 333
-        fprintf('Subject does not have 264 seeds...\n');
+        fprintf('Subject does not have 333 seeds...\n');
         cd(top_dir);
         continue; % Jump to next subject
     end
