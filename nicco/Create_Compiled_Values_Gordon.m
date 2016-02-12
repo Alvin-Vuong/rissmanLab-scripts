@@ -47,6 +47,8 @@ top_dir = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Speci
 % Go to top directory
 cd(top_dir);
 
+% Infinite loop would go here to check finished subjects continuously... TODO
+
 % Iterate through subjects
 for s = 1:length(subjs)
     % Check if subject is already done
