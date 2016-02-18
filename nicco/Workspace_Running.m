@@ -7,7 +7,7 @@ addpath(genpath(toolboxRoot))
 % Get network info
 network_indices_path = '/space/raid6/data/rissman/Nicco/NIQ/Network_Indices/';
 load([network_indices_path 'Petersen_Networks.mat']);
-networks = fieldnames(Petersen_Networks);
+networks = fieldnames(Petersen_Networks)';
 
 % Declare connection types
 internetwork_mutual_connection_types = {'amXY_wX_wY', 'amXY_wX', 'amXY_wY', 'amXY'};
@@ -15,8 +15,8 @@ internetwork_oneway_connection_types = {'aoXY_wX_wY', 'aoXY_wX', 'aoXY_wY', 'aoX
 intranetwork_connection_types={'wX'};
 
 % Choose behavioral variables of interest
-%behavs_of_interest = {'PMAT24_A_CR'};
-behavs_of_interest = {'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'PosAffect_Unadj'};
+behavs_of_interest = {'PMAT24_A_CR'};
+%behavs_of_interest = {'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'PosAffect_Unadj'};
 
 %{
 % Choose networks of interest (specific)
@@ -25,13 +25,10 @@ Network_2 = 'Salience_w_Cingulo_Opercular';
 %}
 
 % Choose networks of interest (for looping)
-%Networks = {'Subcortical','Salience_w_Cingulo_Opercular','Cingulo_Opercular','Salience','Auditory','Sensory_Somatomotor_Hand','Memory_Retrieval','Visual','Ventral_Attention','Fronto_Parietal','Cerebellar','Dorsal_Attention','Sensory_Somatomotor_Mouth'};
-Networks = {'Default_Mode','Subcortical','Salience_w_Cingulo_Opercular','Cingulo_Opercular','Salience','Auditory','Sensory_Somatomotor_Hand','Memory_Retrieval','Visual','Ventral_Attention','Fronto_Parietal','Cerebellar','Dorsal_Attention','Sensory_Somatomotor_Mouth'};
-
 for n1 = 1:size(networks,2)
-    %for n2 = 1:size(networks,2)  %TODO: Handshake Problem Implementation
-Network_1 = Networks{n1};
-%Network_2 = Networks{n2};
+%for n2 = 1:size(networks,2)  %TODO: Handshake Problem Implementation
+Network_1 = networks{n1};
+%Network_2 = networks{n2};
 
 %===================================================================================
 % Optimizations
@@ -69,7 +66,7 @@ end
 % Regular Iterations
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Intranetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 % Intranetwork Ridge only
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -111,7 +108,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-
+%}
 % Intranetwork SVR
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -122,7 +119,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-
+%{
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_2);
@@ -153,11 +150,11 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-
+%}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Internetwork Ridge SVR Lasso %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%{
 % Internetwork Ridge Only
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -273,5 +270,5 @@ for i = 1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
-
+%}
 end

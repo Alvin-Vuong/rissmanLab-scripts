@@ -1,19 +1,16 @@
-function NIQ_full_SVR_Leave_n_Out(behavioral_var,conn_type,Network_1,Network_2)
+function NIQ_full_SVR_Controls(behavioral_var,conn_type,Network_1,Network_2)
 
 toolboxRoot=['/space/raid6/data/rissman/Nicco/MATLAB_PATH/'];
 addpath(genpath(toolboxRoot))
 toolboxRoot=['/space/raid6/data/rissman/Nicco/NIQ/Scripts'];
 addpath(genpath(toolboxRoot))
 
-% Specify leave-N-out value
-leaveN = 30;
-
 % Loop over types of analyses
 types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 val_types = {'M', 'V'};
 percent = .5;
-for t = 1:size(types, 2)
-    for tt = 1:size(val_types, 2)
+for t = 6%1:size(types, 2)
+    for tt = 1%:size(val_types, 2)
         % Set variables of interest
         switch nargin
             case 3
@@ -110,16 +107,17 @@ for t = 1:size(types, 2)
         % Cross Validation
         fprintf('Finding selectors...\n');
         behav_vector = temp_behav;
-        
+        condensed_regs_of_interest = 1:length(behav_vector);
+        [selectors] = enforce_forced_choice(condensed_regs_of_interest);
+
         %% Classification
         fprintf('Beginning Classification...\n');
+        svr_acts = zeros(1, size(selectors, 2));
 
-        crossvalCorr = zeros(1,400);
-        for n = 1:400
-            [train_selectors, test_selectors] = crossvalind('LeaveMOut', size(subjs_used,2), leaveN);
-            
-            train_idx = find(train_selectors == 1)';
-            test_idx = find(test_selectors == 1)';
+        for n=1:size(selectors,2)
+            current_selector = selectors{n};
+            train_idx = find(current_selector == 1);
+            test_idx  = find(current_selector == 2);
 
             train_labels = behav_vector(:,train_idx);
             test_labels = behav_vector(:,test_idx);
@@ -131,35 +129,33 @@ for t = 1:size(types, 2)
 
             % SVR
             [model]=svmtrain_NR(train_labels', train_pats','-s 4 -t 0 -c 1 -q');
-            [svr_acts] = svmpredict_NR(test_labels',test_pats',model,'-q')';
+            [svr_acts(n)] = svmpredict_NR(test_labels',test_pats',model,'-q');
 
-            crossvalCorr(n) = corr(svr_acts', test_labels');
         end
 
         fprintf('Finishing Classification...\n');
-        
-        SVRmean = mean(crossvalCorr);
-        %SVRstd = std(crossvalCorr);
-        
+
+        SVR = corr(svr_acts', behav_vector');
+
         % Output results
         fprintf('Saving results...\n\n');
         switch nargin
             case 3
                 if tt == 1
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_CrossVal_LeaveOut_' num2str(leaveN) '_Mean.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_Mean.txt'];
                 elseif tt == 2
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_CrossVal_LeaveOut_' num2str(leaveN) '_Volume.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_Volume.txt'];
                 end
             case 4
                 if tt == 1
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_CrossVal_LeaveOut_' num2str(leaveN) '_Mean.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_Mean.txt'];
                 elseif tt == 2
-                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_CrossVal_LeaveOut_' num2str(leaveN) '_Volume.txt'];
+                    save_file = ['/space/raid6/data/rissman/Nicco/NIQ/Results/EXPANSION/' Network_1 '_and_' Network_2 '_' conn_type '_' behavioral_var '_n' num2str(length(subjs_used)) '_' types{t} '_SVR_Volume.txt'];
                 end
         end
 
         header = {'SVR'};
-        data = SVRmean;
+        data = SVR;
 
         save_data_with_headers(header,data,save_file);
     end
