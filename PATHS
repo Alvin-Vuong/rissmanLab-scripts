@@ -111,6 +111,15 @@ license_listen.sh
 NIQ_full_SVR_Leave_n_Out.m
     ~/Nicco/NIQ/Scripts/
 
+NIQ_fill_SVR_Controls.m
+    ~/Nicco/NIQ/Scripts/
+
+NIQ_full_SVR_Leave_n_Out_Controls.m
+    ~/Nicco/NIQ/Scripts/
+
+Workspace_Running_SVR.m
+    ~/Nicco/NIQ/Scripts/
+
 ————————————————————————————————————————————
 ————————————————————————————————————————————
 
