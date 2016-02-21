@@ -16,7 +16,7 @@ intranetwork_connection_types={'wX'};
 
 % Choose behavioral variables of interest
 behavs_of_interest1 = {'PMAT24_A_CR'};
-behavs_of_interest2 = {'PMAT24_A_RTCR', 'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'PosAffect_Unadj', 'Endurance_Unadj', 'Strength_Unadj', 'Odor_Unadj,' 'Taste_Unadj', 'PainInterf_Tscore'};
+behavs_of_interest2 = {'PMAT24_A_RTCR', 'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'PosAffect_Unadj', 'Endurance_Unadj', 'Strength_Unadj', 'Odor_Unadj', 'Taste_Unadj', 'PainInterf_Tscore'};
 
 % All networks wX s, smof_u/l, fmos_u/l, Interact, f
 % Leave-1-Out, PMAT-CR, M/V
