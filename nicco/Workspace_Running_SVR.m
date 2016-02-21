@@ -20,7 +20,8 @@ behavs_of_interest2 = {'PMAT24_A_RTCR', 'LifeSatisf_Unadj', 'MeanPurp_Unadj', 'P
 
 % All networks wX s, smof_u/l, fmos_u/l, Interact, f
 % Leave-1-Out, PMAT-CR, M/V
-for n1 = 1:size(networks,2)
+% Non-hemispherical
+for n1 = 3:3:size(networks,2)
 Network_1 = networks{n1};
 
 % Intranetwork SVR
@@ -34,7 +35,40 @@ for i = 1:size(intranetwork_connection_types,2)
     end
 end
 end
+for n1 = size(networks,2)
+Network_1 = networks{n1};
 
+% Intranetwork SVR
+for i = 1:size(intranetwork_connection_types,2)
+    for j = 1:size(behavs_of_interest1,2)
+        fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_1);
+        try NIQ_full_SVR(behavs_of_interest1{j},intranetwork_connection_types{i},Network_1);
+        catch
+            continue
+        end
+    end
+end
+end
+%{
+% Hemispherical
+for n1 = 1:size(networks,2)
+    if (mod(n1,3) == 0)
+        continue
+    end
+Network_1 = networks{n1};
+
+% Intranetwork SVR
+for i = 1:size(intranetwork_connection_types,2)
+    for j = 1:size(behavs_of_interest1,2)
+        fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_1);
+        try NIQ_full_SVR(behavs_of_interest1{j},intranetwork_connection_types{i},Network_1);
+        catch
+            continue
+        end
+    end
+end
+end
+%}
 % DMN-CO,S,SCO am/ao "
 % Leave-1-Out, PMAT-CR, M/V
 Network_2s = {'Cingulo_Opercular', 'Salience', 'Salience_w_Cingulo_Opercular'};
@@ -81,7 +115,7 @@ Network_2 = 'Salience_w_Cingulo_Opercular';
 % Internetwork SVR
 for j = 1:size(behavs_of_interest2,2)
     fprintf('Starting SVR: %s %s %s\n', internetwork_oneway_connection_types{3}, Network_1, Network_2);
-    try NIQ_full_SVR_Controls(behavs_of_interest1{j},internetwork_oneway_connection_types{3},Network_1,Network_2);
+    try NIQ_full_SVR_Controls(behavs_of_interest2{j},internetwork_oneway_connection_types{3},Network_1,Network_2);
     catch
         continue
     end
@@ -89,7 +123,8 @@ end
 
 % All of above Leave-30-Out Iterate: 400
 % All networks wX s, smof_u/l, fmos_u/l, Interact, f
-for n1 = 1:size(networks,2)
+% Non-hemispherical
+for n1 = 3:3:size(networks,2)
 Network_1 = networks{n1};
 
 % Intranetwork SVR
@@ -103,6 +138,40 @@ for i = 1:size(intranetwork_connection_types,2)
     end
 end
 end
+for n1 = size(networks,2)
+Network_1 = networks{n1};
+
+% Intranetwork SVR
+for i = 1:size(intranetwork_connection_types,2)
+    for j = 1:size(behavs_of_interest1,2)
+        fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_1);
+        try NIQ_full_SVR_Leave_n_Out(behavs_of_interest1{j},intranetwork_connection_types{i},Network_1);
+        catch
+            continue
+        end
+    end
+end
+end
+%{
+% Hemispherical
+for n1 = 1:size(networks,2)
+    if (mod(n1,3) == 0)
+        continue
+    end
+Network_1 = networks{n1};
+
+% Intranetwork SVR
+for i = 1:size(intranetwork_connection_types,2)
+    for j = 1:size(behavs_of_interest1,2)
+        fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_1);
+        try NIQ_full_SVR_Leave_n_Out(behavs_of_interest1{j},intranetwork_connection_types{i},Network_1);
+        catch
+            continue
+        end
+    end
+end
+end
+%}
 
 % DMN-CO,S,SCO am/ao "
 Network_2s = {'Cingulo_Opercular', 'Salience', 'Salience_w_Cingulo_Opercular'};
@@ -148,7 +217,7 @@ Network_2 = 'Salience_w_Cingulo_Opercular';
 % Internetwork SVR
 for j = 1:size(behavs_of_interest2,2)
     fprintf('Starting SVR: %s %s %s\n', internetwork_oneway_connection_types{3}, Network_1, Network_2);
-    try NIQ_full_SVR_Leave_n_Out_Controls(behavs_of_interest1{j},internetwork_oneway_connection_types{3},Network_1,Network_2);
+    try NIQ_full_SVR_Leave_n_Out_Controls(behavs_of_interest2{j},internetwork_oneway_connection_types{3},Network_1,Network_2);
     catch
         continue
     end
