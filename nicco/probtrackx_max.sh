@@ -153,11 +153,17 @@ then
 
     echo "$line"
     c=$(( c + 1 ))
+
+    if [ $c -lt $start ]
+    then
+      continue
+    fi
+
     BEDPOST_FOLDER="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Bedpost_Analysis/${line}.bedpostX"
     
     # Move into subject folder (Gordon seeds directory)
     echo "Moving to Subject #$c, ID: $line Gordon seeds"
-    cd $j
+    cd $line
     
     # Check if Gordon folder exists, if not, create it
     if [ $(ls -d1 Gordon | wc -l) -eq 1 ]
