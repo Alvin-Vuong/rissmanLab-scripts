@@ -25,7 +25,8 @@
 ###################################################################################
 
 # Set maximum server load
-maxLoad=100
+maxLoad=1000
+myMaxLoad=50
 
 # Set paths
 top_path="/space/raid6/data/rissman/Nicco/NIQ/EXPANSION"
@@ -210,7 +211,7 @@ then
         target_list="${targets_path}/${line}_Gordon_From_${ps}.txt"
       
         # Check if FUNC SGE is overloaded
-        while [ $( sge qstat | awk '(NR>2){print $1}' | wc -l ) -ge $maxLoad ]
+        while [ $( sge qstat | awk '(NR>2){print $1}' | wc -l ) -ge $maxLoad ] || [ $( sge qstat | awk '(NR>2){print $4}' | grep 'avuong' | wc -l ) -ge $myMaxLoad ]
         do
           echo "Server is overloaded. Sleeping 15 minutes..."
           sleep 15m
