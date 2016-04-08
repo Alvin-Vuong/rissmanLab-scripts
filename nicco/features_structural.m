@@ -58,6 +58,7 @@ function [subjs_used, feature_set] = features_structural(conn_type, val_type, ne
 % Set paths
 structural_avg_path = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/Average_Values/';
 structural_path = '/space/raid6/data/rissman/Nicco/NIQ/EXPANSION/Probtrack_Subject_Specific/Compiled_Values/';
+functional_path = '/space/raid6/data/rissman/Nicco/HCP_ALL/Resting_State/Petersen_FC/';
 network_indices_path = '/space/raid6/data/rissman/Nicco/NIQ/Network_Indices/';
 
 % Get network info
@@ -80,27 +81,39 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%% Check subjects for NaNs first %%%%%%%%%%%%%%%%%%%%%%%
 
-% Maintain list of NaN subjects
+% Maintain list of NaN and missing functional subjects
 nanlist = [];
+missingFunctional = [];
 
-% For each subject
+% Loop over subjects
 for s = 1:length(subjs)
-
+    
     % Grab info for subject
     file_str = char(subjs(s));
     subjectID = file_str(6:end-4);
-
-    % Get subject's data
-    load([structural_path 'Subj_' subjectID '.mat']);
-
-    % Check connectivity values for each pair...
+    
+    % Get subject's data (Skip if missing functional data or subject is not averaged yet)
+    try 
+        load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
+    catch
+        continue;
+    end
+    try
+        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
+    catch
+        missingFunctional = [missingFunctional str2num(subjectID)];
+        %fprintf('Subject %s is missing functional data. Skipping.\n', subjectID);
+        continue;
+    end
+    
+    % Check connectivity values for each pair, for NaNs
     for i = 1:264
         for j = 1:264
             % Skip diagonals
             if i == j
                 continue;
             end
-            val = mean_non_zero(i, j);
+            val = mean_non_zero_avg(i, j);
             % If NaN is found, add subject to list if not added already
             if (isnan(val))
                 if (ismember(str2num(subjectID), nanlist))
@@ -113,7 +126,7 @@ for s = 1:length(subjs)
         end
     end
 end
-
+        
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%% Now process subjects excluding NaNs and incompletes %%%%%%%%%%%%
@@ -169,8 +182,13 @@ if (strcmp(val_type, 'V'))
                     file_str = char(subjs(s));
                     subjectID = file_str(6:end-4);
 
-                    % Check if subject is part of NaN list. If so, skip and remove from used subjects array.
+                    % Check if subject is part of NaN list. If so, skip.
                     if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
                         continue;
                     end
 
@@ -178,6 +196,7 @@ if (strcmp(val_type, 'V'))
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -268,11 +287,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -355,11 +380,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -442,11 +473,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -521,11 +558,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -616,11 +659,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -703,11 +752,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -790,11 +845,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -865,11 +926,17 @@ if (strcmp(val_type, 'V'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -957,8 +1024,13 @@ elseif (strcmp(val_type, 'M'))
                     file_str = char(subjs(s));
                     subjectID = file_str(6:end-4);
 
-                    % Check if subject is part of NaN list. If so, skip and remove from used subjects array.
+                    % Check if subject is part of NaN list. If so, skip.
                     if any(str2num(subjectID)==nanlist)
+                        continue;
+                    end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
                         continue;
                     end
 
@@ -966,6 +1038,7 @@ elseif (strcmp(val_type, 'M'))
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1056,11 +1129,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1143,11 +1222,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1230,11 +1315,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1309,11 +1400,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1404,11 +1501,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1491,11 +1594,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1578,11 +1687,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
@@ -1653,11 +1768,17 @@ elseif (strcmp(val_type, 'M'))
                     if any(str2num(subjectID)==nanlist)
                         continue;
                     end
+                    
+                    % Check if subject is part of missing functional list. If so, skip.
+                    if any(str2num(subjectID)==missingFunctional)
+                        continue;
+                    end
 
                     % Get subject's data
                     try
                         load([structural_avg_path 'Subj_' subjectID '_avg.mat']);
                         load([structural_path 'Subj_' subjectID '.mat']);
+                        load([functional_path subjectID '_Petersen_FC_Matrices.mat']);
                     catch
                         % Subject's data is partially missing. Skip.
                         continue;
