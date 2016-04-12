@@ -12,7 +12,7 @@ leaveN = 30;
 types = {'s', 'smof_upper', 'smof_lower', 'fmos_upper', 'fmos_lower', 'Interact', 'f'};
 val_types = {'M', 'V'};
 percent = .5;
-for t = 1:size(types, 2)
+for t = 1%:size(types, 2)
     for tt = 1:size(val_types, 2)
         % Set variables of interest
         switch nargin
