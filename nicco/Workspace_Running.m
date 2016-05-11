@@ -25,9 +25,9 @@ Network_2 = 'Salience_w_Cingulo_Opercular';
 %}
 
 % Choose networks of interest (for looping)
-for n1 = 1:size(networks,2)
+%for n1 = 1:size(networks,2)
 %for n2 = 1:size(networks,2)  %TODO: Handshake Problem Implementation
-Network_1 = networks{n1};
+%Network_1 = networks{n1};
 %Network_2 = networks{n2};
 
 %===================================================================================
@@ -108,7 +108,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%}
+
 % Intranetwork SVR
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
@@ -119,7 +119,7 @@ for i = 1:size(intranetwork_connection_types,2)
         end
     end
 end
-%{
+
 for i = 1:size(intranetwork_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting SVR: %s %s\n', intranetwork_connection_types{i}, Network_2);
@@ -241,8 +241,12 @@ for i = 1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
-
+%}
 % Internetwork Lasso
+
+Network_1 = 'Default_Mode';
+Network_2 = 'Salience_w_Cingulo_Opercular';
+
 for i = 1:size(internetwork_mutual_connection_types,2)
     for j = 1:size(behavs_of_interest,2)
         fprintf('Starting Lasso: %s %s %s\n', internetwork_mutual_connection_types{i}, Network_1, Network_2);
@@ -270,5 +274,4 @@ for i = 1:size(internetwork_oneway_connection_types,2)
         end
     end
 end
-%}
-end
+%end
