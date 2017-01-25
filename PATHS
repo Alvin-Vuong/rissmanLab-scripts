@@ -152,3 +152,8 @@ features_structural_individual.m
 NIQ_full.m
     ~/Nicco/NIQ/Scripts/
 
+reorg.m
+    ~/Nicco/NIQ/Scripts/
+
+migrate.sh
+    ~/Nicco/NIQ/Save/
