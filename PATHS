@@ -119,6 +119,12 @@ NIQ_full_SVR_Leave_n_Out_Controls.m
 
 Workspace_Running_SVR.m
     ~/Nicco/NIQ/Scripts/
+    
+reorg.m
+    ~/Nicco/NIQ/Scripts/
+
+migrate.sh
+    ~/Nicco/NIQ/Save/
 
 ————————————————————————————————————————————
 ————————————————————————————————————————————
@@ -151,9 +157,3 @@ features_structural_individual.m
 
 NIQ_full.m
     ~/Nicco/NIQ/Scripts/
-
-reorg.m
-    ~/Nicco/NIQ/Scripts/
-
-migrate.sh
-    ~/Nicco/NIQ/Save/
